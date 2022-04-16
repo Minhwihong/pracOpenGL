@@ -1,14 +1,19 @@
 #include "shader.h"
 
 ShaderUPtr Shader::CreateFromFile(const std::string& filename, GLenum shaderType) {
+
     auto shader = std::unique_ptr<Shader>(new Shader());
+
     if (!shader->LoadFile(filename, shaderType))
         return nullptr;
+
     return std::move(shader);
 }
 
 bool Shader::LoadFile(const std::string& filename, GLenum shaderType) {
+
     auto result = LoadTextFile(filename);
+    
     if (!result.has_value()) {
         return false;
     }
@@ -25,6 +30,7 @@ bool Shader::LoadFile(const std::string& filename, GLenum shaderType) {
     // check compile error
     int success = 0;
     glGetShaderiv(m_shader, GL_COMPILE_STATUS, &success);
+
     if (!success) {
         char infoLog[1024];
         glGetShaderInfoLog(m_shader, 1024, nullptr, infoLog);

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-set(PROJECT_NAME point_example)
+set(PROJECT_NAME triangle_example)
 set(CMAKE_CXX_STANDARD 17)
 
 if (APPLE)
@@ -9,7 +9,7 @@ if (APPLE)
     add_compile_definitions(GL_SILENCE_DEPRECATION)
 endif ()
 
-set(WINDOW_NAME "Point Example")
+set(WINDOW_NAME "Triangle Example")
 set(WINDOW_WIDTH 640)
 set(WINDOW_HEIGHT 480)
 
@@ -20,9 +20,9 @@ add_executable(${PROJECT_NAME}
     src/shader.cpp src/shader.h
     src/program.cpp src/program.h
     src/context.cpp src/context.h
+    src/buffer.cpp src/buffer.h
+    src/vertex_layout.cpp src/vertex_layout.h
     )
-
-
 
 include(Dependency.cmake)
 

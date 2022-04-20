@@ -17,11 +17,12 @@ public:
 private:
     Context() {}
     bool Init();
-    ProgramUPtr m_program;
-
-    VertexLayoutUPtr m_vertexLayout;
-    //BufferUPtr m_vertexBuffer;
-    //BufferUPtr m_indexBuffer;
+    
+    //ProgramUPtr m_program;
+    //VertexLayoutUPtr m_vertexLayout;
+    
+    std::unique_ptr<Program>  m_program;
+    std::unique_ptr<VertexLayout> m_vertexLayout;
 
     std::unique_ptr<Buffer> m_vertexBuffer;
     std::unique_ptr<Buffer> m_indexBuffer;

@@ -3,7 +3,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
-ImageUPtr Image::Load(const std::string& filepath){
+std::unique_ptr<Image> Image::Load(const std::string& filepath){
 
     auto image = ImageUPtr(new Image());
 

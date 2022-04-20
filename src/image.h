@@ -7,7 +7,7 @@ CLASS_PTR(Image)
 
 class Image {
 public:
-    static ImageUPtr Load(const std::string& filepath);
+    static std::unique_ptr<Image> Load(const std::string& filepath);
     ~Image();    
 
     const uint8_t* GetData() const {return m_data;}

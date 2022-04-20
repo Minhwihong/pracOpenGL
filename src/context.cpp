@@ -1,8 +1,9 @@
 #include "context.h"
+#include "image.h"
 
-ContextUPtr Context::Create() {
+std::unique_ptr<Context> Context::Create() {
 
-    auto context = ContextUPtr(new Context());
+    auto context = std::unique_ptr<Context>(new Context());
 
     if (!context->Init())
         return nullptr;
@@ -43,8 +44,8 @@ bool Context::Init() {
 
     m_indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t) * 6);
 
-    ShaderPtr vertShader = Shader::CreateFromFile("../shader/simple.vs", GL_VERTEX_SHADER);
-    ShaderPtr fragShader = Shader::CreateFromFile("../shader/simple.fs", GL_FRAGMENT_SHADER);
+    std::shared_ptr<Shader> vertShader = Shader::CreateFromFile("../shader/simple.vs", GL_VERTEX_SHADER);
+    std::shared_ptr<Shader> fragShader = Shader::CreateFromFile("../shader/simple.fs", GL_FRAGMENT_SHADER);
 
     if (!vertShader || !fragShader)
         return false;
@@ -57,11 +58,18 @@ bool Context::Init() {
     if (!m_program)
         return false;
 
-    SPDLOG_INFO("program id: {}", m_program->Get());    
+    SPDLOG_INFO("program id: {}", m_program->Get());   
+ 
 
-    //auto loc = glGetUniformLocation(m_program->Get(), "ourColor"); 
-    //m_program->Use();
-    //glUniform4f(loc, 0.3f, 1.0f, 0.0f, 1.0f);   
+ 
+    auto image = Image::Load("../image/container.jpg");
+
+    if(image == nullptr){
+        return false;
+    } 
+
+    SPDLOG_INFO("Image: {}x{}, {} channels", image->GetWidth(), image->GetHeight(), image->GetChannelCount());
+  
 
     glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
 

@@ -6,6 +6,7 @@
 #include "program.h"
 #include "buffer.h"
 #include "vertex_layout.h"
+#include "texture.h"
 
 CLASS_PTR(Context)
 class Context {
@@ -26,9 +27,10 @@ private:
 
     std::unique_ptr<Buffer> m_vertexBuffer;
     std::unique_ptr<Buffer> m_indexBuffer;
+    std::unique_ptr<Texture> m_texture;
 
     //texture id 저장을 위한 변수 
-    uint32_t m_texture;
+    //uint32_t m_texture;
 };
 
 #endif // __CONTEXT_H__

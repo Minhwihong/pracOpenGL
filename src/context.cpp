@@ -77,30 +77,12 @@ bool Context::Init() {
     } 
 
     SPDLOG_INFO("Image: {}x{}, {} channels", image->GetWidth(), image->GetHeight(), image->GetChannelCount());
-  
-    // openGL texture object create and bind to m_texture
-    // m_texture로 바인딩이 되면 앞으로 설정할 텍스터 관련 설정함수(glTexParameteri,glTexImage2D등)은 m_texture와 연결됨
-    // glGenTextures(1, &m_texture);
-    // glBindTexture(GL_TEXTURE_2D, m_texture);
-
-    // // glTexParameter(i) -> int type parameter set
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // // GL_TEXTURE_WRAP_S -> X축,  GL_TEXTURE_WRAP_T -> Y축
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-
-    // //(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, 
-    // //     GLenum format, GLenum type, const void *pixels);
-    
-    // // GPU쪽의 텍스처 데이터를 기술함 : GL_TEXTURE_2D, 0, GL_RGB, image->GetWidth(), image->GetHeight(), 0
-    // // CPU쪽의 텍스처 데이터를 기술함 : GL_RGB, GL_UNSIGNED_BYTE, image->GetData()
-    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image->GetWidth(), image->GetHeight(), 0, 
-    //     GL_RGB, GL_UNSIGNED_BYTE, image->GetData());
-
 
     m_texture = Texture::CreateFromImage(image.get());
+
+    if(!m_texture){
+        SPDLOG_ERROR("Texture loading failed..");
+    }
 
     glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
 

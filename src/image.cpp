@@ -22,7 +22,11 @@ Image::~Image(){
 }
 
 
-std::unique_ptr<Image> Image::Create(int width, int height, int channelCount = 4){
+/*
+정의가 static std::unique_ptr<Image> Create(int width, int height, int channelCount = 4);
+로  되어 있어도, 실제 구현부에서는 아래와 같이 사용
+ */
+std::unique_ptr<Image> Image::Create(int width, int height, int channelCount){
     // parameter로 넘어온 세팅을 이용하여 거기에 맞는 empty 메모리를 확보하고 포인터 반납 
 
     auto image = std::unique_ptr<Image>(new Image());
@@ -37,6 +41,26 @@ std::unique_ptr<Image> Image::Create(int width, int height, int channelCount = 4
 
 void Image::SetCheckImage(int gridX, int gridY){
     // 
+    for(int jdx=0; jdx < m_height; ++jdx){
+
+        for(int idx=0; idx < m_width; ++idx){
+
+            int pos = (jdx*m_width + idx) * m_channelCount;
+
+            bool even = ( (idx/gridX) + (jdx/gridY)) % 2 == 0;
+
+            uint8_t value = even ? 255 : 0; // even ? yes => white, no => black
+
+            for(int kdx=0; kdx < m_channelCount; ++kdx){
+
+                m_data[pos+kdx] = value;        
+            }
+
+            if(m_channelCount > 3)
+                m_data[3] = 255;
+
+        }
+    }
 
 }
 

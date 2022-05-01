@@ -70,13 +70,17 @@ bool Context::Init() {
  
 
  
-    auto image = Image::Load("../image/container.jpg");
+    //auto image = Image::Load("../image/container.jpg");
 
-    if(image == nullptr){
-        return false;
-    } 
+    // if(image == nullptr){
+    //     return false;
+    // } 
 
-    SPDLOG_INFO("Image: {}x{}, {} channels", image->GetWidth(), image->GetHeight(), image->GetChannelCount());
+    // SPDLOG_INFO("Image: {}x{}, {} channels", image->GetWidth(), image->GetHeight(), image->GetChannelCount());
+
+
+    auto image = Image::Create(512, 512);
+    image->SetCheckImage(16,16);
 
     m_texture = Texture::CreateFromImage(image.get());
 

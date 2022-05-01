@@ -81,6 +81,13 @@ bool Image::Allocate(int width, int height, int channelCount){
 
 bool Image::LoadWithStb(const std::string& filepath){
 
+    /* 
+    stbi_set_flip_vertically_on_load(true); 를 사용하지 않으면 이미지 상하반전
+    보통의 이미지는 좌상단을 원점으로 하는데 OpenGL은 좌하단을 원점으로 사용
+    따라서 아래 함수가 없으면 상하 반전됨
+    */
+    stbi_set_flip_vertically_on_load(true);
+
     m_data = stbi_load(filepath.c_str(), &m_width, &m_height, &m_channelCount, 0);
 
     if(!m_data){

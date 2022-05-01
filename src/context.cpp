@@ -93,5 +93,20 @@ bool Context::Init() {
 
     glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
 
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_texture->Get());
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_texture2->Get());
+
+    m_program->Use();
+
+    // use texture slot no.0
+    glUniform1i(glGetUniformLocation(m_program->Get(), "tex"), 0);
+
+    // use texture slot no.1
+    glUniform1i(glGetUniformLocation(m_program->Get(), "tex2"), 1);
+
+
     return true;
 }

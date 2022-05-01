@@ -27,7 +27,9 @@ private:
 
     std::unique_ptr<Buffer> m_vertexBuffer;
     std::unique_ptr<Buffer> m_indexBuffer;
+
     std::unique_ptr<Texture> m_texture;
+    std::unique_ptr<Texture> m_texture2;
 
     //texture id 저장을 위한 변수 
     //uint32_t m_texture;

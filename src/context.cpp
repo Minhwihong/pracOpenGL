@@ -70,19 +70,22 @@ bool Context::Init() {
  
 
  
-    //auto image = Image::Load("../image/container.jpg");
+    auto image = Image::Load("../image/container.jpg");
+    auto image2 = Image::Load("../image/awesomeface.png");
 
-    // if(image == nullptr){
-    //     return false;
-    // } 
+    if(image == nullptr || image2 == nullptr){
+        return false;
+    } 
 
-    // SPDLOG_INFO("Image: {}x{}, {} channels", image->GetWidth(), image->GetHeight(), image->GetChannelCount());
+    SPDLOG_INFO("Image 1: {}x{}, {} channels", image->GetWidth(), image->GetHeight(), image->GetChannelCount());
+    SPDLOG_INFO("Image 2: {}x{}, {} channels", image2->GetWidth(), image2->GetHeight(), image2->GetChannelCount());
 
 
-    auto image = Image::Create(512, 512);
-    image->SetCheckImage(16,16);
-
+    // auto image = Image::Create(512, 512);
+    // image->SetCheckImage(16,16);
     m_texture = Texture::CreateFromImage(image.get());
+
+    m_texture2 = Texture::CreateFromImage(image2.get());
 
     if(!m_texture){
         SPDLOG_ERROR("Texture loading failed..");

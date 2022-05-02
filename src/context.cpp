@@ -107,6 +107,20 @@ bool Context::Init() {
     // use texture slot no.1
     glUniform1i(glGetUniformLocation(m_program->Get(), "tex2"), 1);
 
+    glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
+    // 단위행렬 기준 (1,1,0)만큼 평행이동하는 행렬
+    auto trans = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 0.0f));
+    // 단위행렬 기준 z축으로 90도 회전행렬
+    auto rot = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    // 3배 확대 행렬
+    auto scale = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f));
+    // 확대 -> 회전 -> 평행이동 순으로 진행됨(행렬곱셈)
+    //vec = trans * rot * scale * vec;
+    vec = trans * vec;
+    SPDLOG_INFO("translate vec: [{}, {}, {}]", vec.x, vec.y, vec.z);
+
+
+
 
     return true;
 }

@@ -14,22 +14,22 @@ std::unique_ptr<Context> Context::Create() {
 
 void Context::Render() {
 
-    // std::vector<glm::vec3> cubePositions = {
-    //     glm::vec3( 0.0f, 0.0f, 0.0f),
-    //     glm::vec3( 2.0f, 5.0f, -15.0f),
-    //     glm::vec3(-1.5f, -2.2f, -2.5f),
-    //     glm::vec3(-3.8f, -2.0f, -12.3f),
-    //     glm::vec3( 2.4f, -0.4f, -3.5f),
-    //     glm::vec3(-1.7f, 3.0f, -7.5f),
-    //     glm::vec3( 1.3f, -2.0f, -2.5f),
-    //     glm::vec3( 1.5f, 2.0f, -2.5f),
-    //     glm::vec3( 1.5f, 0.2f, -1.5f),
-    //     glm::vec3(-1.3f, 1.0f, -1.5f),
-    // };
+    std::vector<glm::vec3> cubePositions = {
+        glm::vec3( 0.0f, 0.0f, 0.0f),
+        glm::vec3( 2.0f, 5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3( 2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f, 3.0f, -7.5f),
+        glm::vec3( 1.3f, -2.0f, -2.5f),
+        glm::vec3( 1.5f, 2.0f, -2.5f),
+        glm::vec3( 1.5f, 0.2f, -1.5f),
+        glm::vec3(-1.3f, 1.0f, -1.5f),
+    };
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-    m_program->Use();
+    //m_program->Use();
 
 
     // 종횡비 4:3, 세로화각 45도의 원근투영
@@ -38,14 +38,21 @@ void Context::Render() {
     //카메라는 원점으로부터 z축 방향으로 -3만큼 떨어짐
     auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
 
-    // rotate 55 degree from x axis
-    auto model = glm::rotate(glm::mat4(1.0f), glm::radians((float)glfwGetTime()*120.0f), glm::vec3(1.0f, 0.2f, 0.0f));
+    //auto model = glm::rotate(glm::mat4(1.0f), glm::radians((float)glfwGetTime()*120.0f), glm::vec3(1.0f, 0.2f, 0.0f));
 
-    auto transform = projection * view * model;
-    m_program->SetUniform("transform", transform);
+    for(int idx=0; idx<cubePositions.size(); ++idx){
+        auto& pos = cubePositions[idx];
 
+        auto model = glm::translate(glm::mat4(1.0f), pos);
+        model =glm::rotate(model, glm::radians((float)glfwGetTime()*120.0f  + 20*(float)idx), glm::vec3(1.0f, 0.2f, 0.0f));
 
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        auto transform = projection * view * model;
+        m_program->SetUniform("transform", transform);
+
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    }
+
+    
     //glDrawArrays(GL_LINE_STRIP, 0, 7);
 }
 

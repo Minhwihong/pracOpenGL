@@ -13,8 +13,8 @@ std::unique_ptr<Context> Context::Create() {
 }
 
 void Context::Render() {
-    glClear(GL_COLOR_BUFFER_BIT);
-
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
     m_program->Use();
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     //glDrawArrays(GL_LINE_STRIP, 0, 7);

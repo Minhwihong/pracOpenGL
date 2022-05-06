@@ -13,9 +13,38 @@ std::unique_ptr<Context> Context::Create() {
 }
 
 void Context::Render() {
+
+    // std::vector<glm::vec3> cubePositions = {
+    //     glm::vec3( 0.0f, 0.0f, 0.0f),
+    //     glm::vec3( 2.0f, 5.0f, -15.0f),
+    //     glm::vec3(-1.5f, -2.2f, -2.5f),
+    //     glm::vec3(-3.8f, -2.0f, -12.3f),
+    //     glm::vec3( 2.4f, -0.4f, -3.5f),
+    //     glm::vec3(-1.7f, 3.0f, -7.5f),
+    //     glm::vec3( 1.3f, -2.0f, -2.5f),
+    //     glm::vec3( 1.5f, 2.0f, -2.5f),
+    //     glm::vec3( 1.5f, 0.2f, -1.5f),
+    //     glm::vec3(-1.3f, 1.0f, -1.5f),
+    // };
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     m_program->Use();
+
+
+    // 종횡비 4:3, 세로화각 45도의 원근투영
+    auto projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.01f, 10.0f);
+
+    //카메라는 원점으로부터 z축 방향으로 -3만큼 떨어짐
+    auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
+
+    // rotate 55 degree from x axis
+    auto model = glm::rotate(glm::mat4(1.0f), glm::radians((float)glfwGetTime()*120.0f), glm::vec3(1.0f, 0.2f, 0.0f));
+
+    auto transform = projection * view * model;
+    m_program->SetUniform("transform", transform);
+
+
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     //glDrawArrays(GL_LINE_STRIP, 0, 7);
 }
@@ -141,12 +170,11 @@ bool Context::Init() {
     glBindTexture(GL_TEXTURE_2D, m_texture2->Get());
 
     m_program->Use();
-
     // use texture slot no.0
-    glUniform1i(glGetUniformLocation(m_program->Get(), "tex"), 0);
-
+    m_program->SetUniform("tex", 0);
     // use texture slot no.1
-    glUniform1i(glGetUniformLocation(m_program->Get(), "tex2"), 1);
+    m_program->SetUniform("tex2", 1);
+
 
     // rotate 55 degree from x axis
     auto model = glm::rotate(glm::mat4(1.0f), glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -158,11 +186,8 @@ bool Context::Init() {
     auto projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.01f, 10.0f);
 
     auto transform = projection * view * model;
-    auto transformLoc = glGetUniformLocation(m_program->Get(), "transform");
-
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));    
-
-
+    m_program->SetUniform("transform", transform);
+ 
 
     return true;
 }

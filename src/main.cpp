@@ -80,9 +80,11 @@ int main(int argc, const char** argv) {
     // glfw 루프 실행, 윈도우 close 버튼을 누르면 정상 종료
     SPDLOG_INFO("Start main loop");
     while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+        context->ProcessInput(window);
         context->Render();
         glfwSwapBuffers(window);
-        glfwPollEvents();
+        
     }
     context.reset();
 

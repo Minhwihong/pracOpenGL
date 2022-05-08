@@ -29,38 +29,26 @@ void Context::Render() {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-    //m_program->Use();
-
 
     // 종횡비 4:3, 세로화각 45도의 원근투영
     auto projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.01f, 20.0f);
 
-    //카메라는 원점으로부터 z축 방향으로 -3만큼 떨어짐
-    //auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
 
     // -1 from 1 sin value
     float xx = sinf((float)glfwGetTime() * glm::pi<float>() * 2.0f) * 3.0f;
 
     // 주변을 회전하는 카메라 (y축을 중심으로 회전)
-    float angle = glfwGetTime() * glm::pi<float>() * 0.5f;
-    auto x = sinf(angle) * 10.0f;
-    auto z = cosf(angle) * 10.0f;
+    // float angle = glfwGetTime() * glm::pi<float>() * 0.5f;
+    // auto x = sinf(angle) * 10.0f;
+    // auto z = cosf(angle) * 10.0f;
 
-    auto cameraPos      = glm::vec3(x, 3.0f, z);
-    auto cameraTarget   = glm::vec3(0.0f, 0.0f, 0.0f);
-    auto cameraUp       = glm::vec3(0.0f, 1.0f, 0.0f);
+    // auto cameraPos      = glm::vec3(x, 3.0f, z);
+    // auto cameraTarget   = glm::vec3(0.0f, 0.0f, 0.0f);
+    // auto cameraUp       = glm::vec3(0.0f, 1.0f, 0.0f);
 
-    /* ********** 아래의 코드는 glm::lookAt(x_hat, y_hat, z_hat)으로 대체 ********** */
-    // auto cameraZ        = glm::normalize(cameraPos - cameraTarget);
-    // auto cameraX        = glm::normalize(glm::cross(cameraUp, cameraZ));
-    // auto cameraY        = glm::cross(cameraZ, cameraX);
-
-    // auto cameraMat      = glm::mat4(glm::vec4(cameraX, 0.0f), glm::vec4(cameraY, 0.0f), glm::vec4(cameraZ, 0.0f), glm::vec4(cameraPos, 1.0f));
-    // auto view           = glm::inverse(cameraMat);
-    /* ************************************************************************ */
 
     // 카메라의 3축의 단위벡터로부터 카메라 뷰 행렬을 계산하는 glm 함수
-    auto view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+    auto view = glm::lookAt(m_cameraPos, m_cameraFront+m_cameraPos, m_cameraUp);
 
     for(int idx=0; idx<cubePositions.size(); ++idx){
         auto& pos = cubePositions[idx];
@@ -74,8 +62,6 @@ void Context::Render() {
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     }
 
-    
-    //glDrawArrays(GL_LINE_STRIP, 0, 7);
 }
 
 bool Context::Init() {
@@ -90,10 +76,6 @@ bool Context::Init() {
     //     -0.5f, 0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f // top left, yellow
     // };
 
-    // uint32_t indices[] = { // note that we start from 0!
-    //     0, 1, 3, // first triangle
-    //     1, 2, 3, // second triangle
-    // };
 
     float vertices[] = {
         -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
@@ -203,25 +185,45 @@ bool Context::Init() {
     m_program->SetUniform("tex", 0);
     // use texture slot no.1
     m_program->SetUniform("tex2", 1);
-
-
-    // rotate 55 degree from x axis
-    auto model = glm::rotate(glm::mat4(1.0f), glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-    //카메라는 원점으로부터 z축 방향으로 -3만큼 떨어짐
-    auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
-
-    // 종횡비 4:3, 세로화각 45도의 원근투영
-    auto projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.01f, 10.0f);
-
-    //auto transform = projection * view * model;
-    //m_program->SetUniform("transform", transform);
  
-
     return true;
 }
 
 
+
+void Context::ProcessInput(GLFWwindow* window){
+
+    const float cameraSpeed = 0.05f;
+
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
+        m_cameraPos += cameraSpeed * m_cameraFront;
+    }
+
+    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS){
+        m_cameraPos -= cameraSpeed * m_cameraFront;
+    }
+
+    auto cameraRight = glm::normalize(glm::cross(m_cameraUp, -m_cameraFront));
+
+    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS){
+        m_cameraPos -= cameraSpeed * cameraRight;
+    }
+
+    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS){
+        m_cameraPos += cameraSpeed * cameraRight;
+    }
+
+    auto cameraUp = glm::normalize(glm::cross(-m_cameraFront, cameraRight));
+
+    if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS){
+        m_cameraPos -= cameraSpeed * cameraUp;
+    }
+
+    if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS){
+        m_cameraPos += cameraSpeed * cameraUp;
+    }
+
+}
 
 
 

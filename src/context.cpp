@@ -36,9 +36,21 @@ void Context::Render() {
     auto projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.01f, 10.0f);
 
     //카메라는 원점으로부터 z축 방향으로 -3만큼 떨어짐
-    auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
+    //auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
 
-    //auto model = glm::rotate(glm::mat4(1.0f), glm::radians((float)glfwGetTime()*120.0f), glm::vec3(1.0f, 0.2f, 0.0f));
+    // -1 from 1 sin value
+    float xx = sinf((float)glfwGetTime() * glm::pi<float>() * 2.0f) * 3.0f;
+
+    auto cameraPos      = glm::vec3(3.0f, 3.0f, 3.0f);
+    auto cameraTarget   = glm::vec3(0.0f, 0.0f, 0.0f);
+    auto cameraUp       = glm::vec3(0.0f, 1.0f, 0.0f);
+
+    auto cameraZ        = glm::normalize(cameraPos - cameraTarget);
+    auto cameraX        = glm::normalize(glm::cross(cameraUp, cameraZ));
+    auto cameraY        = glm::cross(cameraZ, cameraX);
+
+    auto cameraMat      = glm::mat4(glm::vec4(cameraX, 0.0f), glm::vec4(cameraY, 0.0f), glm::vec4(cameraZ, 0.0f), glm::vec4(cameraPos, 1.0f));
+    auto view           = glm::inverse(cameraMat);
 
     for(int idx=0; idx<cubePositions.size(); ++idx){
         auto& pos = cubePositions[idx];
@@ -192,9 +204,14 @@ bool Context::Init() {
     // 종횡비 4:3, 세로화각 45도의 원근투영
     auto projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.01f, 10.0f);
 
-    auto transform = projection * view * model;
-    m_program->SetUniform("transform", transform);
+    //auto transform = projection * view * model;
+    //m_program->SetUniform("transform", transform);
  
 
     return true;
 }
+
+
+
+
+

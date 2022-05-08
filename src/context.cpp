@@ -31,20 +31,8 @@ void Context::Render() {
     glEnable(GL_DEPTH_TEST);
 
     // 종횡비 4:3, 세로화각 45도의 원근투영
-    auto projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.01f, 20.0f);
-
-
-    // -1 from 1 sin value
-    float xx = sinf((float)glfwGetTime() * glm::pi<float>() * 2.0f) * 3.0f;
-
-    // 주변을 회전하는 카메라 (y축을 중심으로 회전)
-    // float angle = glfwGetTime() * glm::pi<float>() * 0.5f;
-    // auto x = sinf(angle) * 10.0f;
-    // auto z = cosf(angle) * 10.0f;
-
-    // auto cameraPos      = glm::vec3(x, 3.0f, z);
-    // auto cameraTarget   = glm::vec3(0.0f, 0.0f, 0.0f);
-    // auto cameraUp       = glm::vec3(0.0f, 1.0f, 0.0f);
+    auto projection = glm::perspective(glm::radians(45.0f),
+        (float)m_width/(float)m_height, 0.01f, 20.0f);
 
 
     // 카메라의 3축의 단위벡터로부터 카메라 뷰 행렬을 계산하는 glm 함수
@@ -227,3 +215,10 @@ void Context::ProcessInput(GLFWwindow* window){
 
 
 
+void Context::Reshapre(int width, int height){
+    m_width = width;
+    m_height = height;
+
+    glViewport(0, 0, m_width, m_height);
+
+}

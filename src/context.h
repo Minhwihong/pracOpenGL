@@ -15,7 +15,8 @@ public:
     static std::unique_ptr<Context> Create();
     void Render();  
     void ProcessInput(GLFWwindow* window);
-    //std::unique_ptr<int> x;  
+    void Reshapre(int width, int height);
+
 private:
     Context() {}
     bool Init();
@@ -36,6 +37,9 @@ private:
     glm::vec3 m_cameraPos   { glm::vec3(0.0f, 0.0f, 3.0f)};
     glm::vec3 m_cameraFront { glm::vec3(0.0f, 0.0f, -1.0f)};
     glm::vec3 m_cameraUp    { glm::vec3(0.0f, 1.0f, 0.0f)};
+
+    int m_width {WINDOW_WIDTH};
+    int m_height {WINDOW_HEIGHT};
 };
 
 #endif // __CONTEXT_H__

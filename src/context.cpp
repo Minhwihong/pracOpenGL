@@ -33,7 +33,7 @@ void Context::Render() {
 
 
     // 종횡비 4:3, 세로화각 45도의 원근투영
-    auto projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.01f, 10.0f);
+    auto projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.01f, 20.0f);
 
     //카메라는 원점으로부터 z축 방향으로 -3만큼 떨어짐
     //auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
@@ -41,16 +41,26 @@ void Context::Render() {
     // -1 from 1 sin value
     float xx = sinf((float)glfwGetTime() * glm::pi<float>() * 2.0f) * 3.0f;
 
-    auto cameraPos      = glm::vec3(3.0f, 3.0f, 3.0f);
+    // 주변을 회전하는 카메라 (y축을 중심으로 회전)
+    float angle = glfwGetTime() * glm::pi<float>() * 0.5f;
+    auto x = sinf(angle) * 10.0f;
+    auto z = cosf(angle) * 10.0f;
+
+    auto cameraPos      = glm::vec3(x, 3.0f, z);
     auto cameraTarget   = glm::vec3(0.0f, 0.0f, 0.0f);
     auto cameraUp       = glm::vec3(0.0f, 1.0f, 0.0f);
 
-    auto cameraZ        = glm::normalize(cameraPos - cameraTarget);
-    auto cameraX        = glm::normalize(glm::cross(cameraUp, cameraZ));
-    auto cameraY        = glm::cross(cameraZ, cameraX);
+    /* ********** 아래의 코드는 glm::lookAt(x_hat, y_hat, z_hat)으로 대체 ********** */
+    // auto cameraZ        = glm::normalize(cameraPos - cameraTarget);
+    // auto cameraX        = glm::normalize(glm::cross(cameraUp, cameraZ));
+    // auto cameraY        = glm::cross(cameraZ, cameraX);
 
-    auto cameraMat      = glm::mat4(glm::vec4(cameraX, 0.0f), glm::vec4(cameraY, 0.0f), glm::vec4(cameraZ, 0.0f), glm::vec4(cameraPos, 1.0f));
-    auto view           = glm::inverse(cameraMat);
+    // auto cameraMat      = glm::mat4(glm::vec4(cameraX, 0.0f), glm::vec4(cameraY, 0.0f), glm::vec4(cameraZ, 0.0f), glm::vec4(cameraPos, 1.0f));
+    // auto view           = glm::inverse(cameraMat);
+    /* ************************************************************************ */
+
+    // 카메라의 3축의 단위벡터로부터 카메라 뷰 행렬을 계산하는 glm 함수
+    auto view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
 
     for(int idx=0; idx<cubePositions.size(); ++idx){
         auto& pos = cubePositions[idx];

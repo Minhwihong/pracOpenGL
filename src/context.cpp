@@ -30,6 +30,11 @@ void Context::Render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
+
+    m_cameraFront = glm::rotate(glm::mat4(1.0f), glm::radians(m_cameraYaw), glm::vec3(0.0f, 1.0f, 0.0f)) *
+                        glm::rotate(glm::mat4(1.0f), glm::radians(m_cameraPitch), glm::vec3(1.0f, 0.0f, 0.0f) ) *
+                        glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);     // (0.0f, 0.0f, -1.0f, 0.0f)에서 마지막에 0.0을 넣은 것은 평행이동이 안되게 하기 위함
+
     // 종횡비 4:3, 세로화각 45도의 원근투영
     auto projection = glm::perspective(glm::radians(45.0f),
         (float)m_width/(float)m_height, 0.01f, 20.0f);
@@ -149,9 +154,6 @@ bool Context::Init() {
     SPDLOG_INFO("Image 1: {}x{}, {} channels", image->GetWidth(), image->GetHeight(), image->GetChannelCount());
     SPDLOG_INFO("Image 2: {}x{}, {} channels", image2->GetWidth(), image2->GetHeight(), image2->GetChannelCount());
 
-
-    // auto image = Image::Create(512, 512);
-    // image->SetCheckImage(16,16);
     m_texture = Texture::CreateFromImage(image.get());
 
     m_texture2 = Texture::CreateFromImage(image2.get());
@@ -213,9 +215,34 @@ void Context::ProcessInput(GLFWwindow* window){
 
 }
 
+void Context::MouseMove(double x, double y){
+
+    static glm::vec2 prevPos = glm::vec2((float)x, (float)y);
+    auto pos = glm::vec2((float)x, (float)y);
+    auto deltaPos = pos - prevPos;
+
+    const float cameraRotSpeed = 0.8f;
+
+    m_cameraYaw -= deltaPos.x * cameraRotSpeed;
+    m_cameraPitch -= deltaPos.y * cameraRotSpeed;
+
+    if(m_cameraYaw < 0.0f)  
+        m_cameraYaw += 360.0f;
+
+    if(m_cameraYaw > 360.0f)  
+        m_cameraYaw -= 360.0f;
+
+    if(m_cameraPitch > 89.0f)  
+        m_cameraPitch = 89.0f;
+
+    if(m_cameraPitch < -89.0f)  
+        m_cameraPitch = -89.0f;
+
+    prevPos = pos;
+}
 
 
-void Context::Reshapre(int width, int height){
+void Context::Reshape(int width, int height){
     m_width = width;
     m_height = height;
 

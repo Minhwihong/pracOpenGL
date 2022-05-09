@@ -6,10 +6,17 @@ void OnFramebufferSizeChange(GLFWwindow* window, int width, int height) {
 
     auto context = reinterpret_cast<Context*>(glfwGetWindowUserPointer(window));
 
-    context->Reshapre(width, height);
+    context->Reshape(width, height);
     
     //glViewport(0, 0, width, height);
 }
+
+
+void OnCursorPos(GLFWwindow* window, double x, double y){
+    auto context = reinterpret_cast<Context*>(glfwGetWindowUserPointer(window));
+    context->MouseMove(x,y);
+}
+
 
 void OnKeyEvent(GLFWwindow* window,
     int key, int scancode, int action, int mods) {
@@ -26,10 +33,12 @@ void OnKeyEvent(GLFWwindow* window,
     }
 }
 
+
 void Render() {
     glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 }
+
 
 int main(int argc, const char** argv) {
     // 시작을 알리는 로그
@@ -83,6 +92,7 @@ int main(int argc, const char** argv) {
     OnFramebufferSizeChange(window, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSetFramebufferSizeCallback(window, OnFramebufferSizeChange);
     glfwSetKeyCallback(window, OnKeyEvent);
+    glfwSetCursorPosCallback(window, OnCursorPos);
 
     // glfw 루프 실행, 윈도우 close 버튼을 누르면 정상 종료
     SPDLOG_INFO("Start main loop");

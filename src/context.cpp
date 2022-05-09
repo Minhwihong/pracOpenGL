@@ -1,5 +1,6 @@
 #include "context.h"
 #include "image.h"
+#include <imgui.h>
 
 
 std::unique_ptr<Context> Context::Create() {
@@ -13,6 +14,16 @@ std::unique_ptr<Context> Context::Create() {
 }
 
 void Context::Render() {
+
+    // if(ImGui::Begin("my first ImGui window")){
+    //     ImGui::Text("this is first text..");
+    // }
+    if(ImGui::Begin("ui window")){
+        ImGui::ColorEdit4("clear color", glm::value_ptr(m_clearColor));
+
+        
+    }
+    ImGui::End();
 
     std::vector<glm::vec3> cubePositions = {
         glm::vec3( 0.0f, 0.0f, 0.0f),

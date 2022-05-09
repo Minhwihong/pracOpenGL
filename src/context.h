@@ -32,6 +32,8 @@ private:
     std::unique_ptr<Texture> m_texture;
     std::unique_ptr<Texture> m_texture2;
 
+    glm::vec4 m_clearColor {glm::vec4(0.1f, 0.2f, 0.3f, 0.0f)};
+
     // camera param
     bool m_cameraControl {false};
     glm::vec2 m_prevMousePos {glm::vec2(0.0f)};

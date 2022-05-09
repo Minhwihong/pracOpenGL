@@ -17,13 +17,11 @@ public:
     void ProcessInput(GLFWwindow* window);
     void Reshape(int width, int height);
     void MouseMove(double x, double y);
+    void MouseButton(int btn, int action, double x, double y);
 
 private:
     Context() {}
     bool Init();
-    
-    //ProgramUPtr m_program;
-    //VertexLayoutUPtr m_vertexLayout;
     
     std::unique_ptr<Program>  m_program;
     std::unique_ptr<VertexLayout> m_vertexLayout;
@@ -35,6 +33,8 @@ private:
     std::unique_ptr<Texture> m_texture2;
 
     // camera param
+    bool m_cameraControl {false};
+    glm::vec2 m_prevMousePos {glm::vec2(0.0f)};
     float m_cameraPitch {0.0f};
     float m_cameraYaw {0.0f};
     glm::vec3 m_cameraPos   { glm::vec3(0.0f, 0.0f, 3.0f)};

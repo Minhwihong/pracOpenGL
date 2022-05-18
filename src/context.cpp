@@ -15,6 +15,8 @@ std::unique_ptr<Context> Context::Create() {
 
 void Context::Render() {
 
+    static float temp = 0.0f;
+
     // if(ImGui::Begin("my first ImGui window")){
     //     ImGui::Text("this is first text..");
     // }
@@ -67,17 +69,37 @@ void Context::Render() {
     // 카메라의 3축의 단위벡터로부터 카메라 뷰 행렬을 계산하는 glm 함수
     auto view = glm::lookAt(m_cameraPos, m_cameraFront+m_cameraPos, m_cameraUp);
 
-    for(int idx=0; idx<cubePositions.size(); ++idx){
-        auto& pos = cubePositions[idx];
+    // for(int idx=0; idx<cubePositions.size(); ++idx){
+    //     auto& pos = cubePositions[idx];
 
-        auto model = glm::translate(glm::mat4(1.0f), pos);
-        model =glm::rotate(model, glm::radians((float)glfwGetTime()*120.0f  + 20*(float)idx), glm::vec3(1.0f, 0.2f, 0.0f));
+    //     auto model = glm::translate(glm::mat4(1.0f), pos);
+    //     model =glm::rotate(model, glm::radians((float)glfwGetTime()*120.0f  + 20*(float)idx), glm::vec3(1.0f, 0.2f, 0.0f));
 
-        auto transform = projection * view * model;
-        m_program->SetUniform("transform", transform);
+    //     auto transform = projection * view * model;
+    //     m_program->SetUniform("transform", transform);
 
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-    }
+    //     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    // }
+
+    auto pos = glm::vec3( glm::sin(temp), glm::cos(temp), 0.0f);
+    auto org = glm::vec3( 0.0f, 0.0f, 0.0f);
+
+    temp = temp + 0.01f;
+
+    auto model = glm::translate(glm::mat4(1.0f), pos);
+    model =glm::rotate(model, glm::radians((float)glfwGetTime()*120.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+    auto transform = projection * view * model;
+    m_program->SetUniform("transform", transform);
+
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+
+    auto org_model = glm::translate(glm::mat4(1.0f), org);
+
+    m_program->SetUniform("transform", projection * view * org_model);
+
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 }
 
@@ -134,6 +156,20 @@ bool Context::Init() {
         16, 17, 18, 18, 19, 16,
         20, 22, 21, 22, 20, 23,
     };
+
+    for(int idx=0; idx<120; ++idx){
+        
+        int x = idx%5;
+        
+        if(x == 3 || x == 4){
+
+        }
+        else {
+            vertices[idx] /= 2.0f;
+        }
+
+        
+    }
 
     m_vertexLayout = VertexLayout::Create();
     m_vertexBuffer = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_STATIC_DRAW, vertices, sizeof(float) * 120);

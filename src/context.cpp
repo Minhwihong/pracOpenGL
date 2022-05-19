@@ -81,6 +81,7 @@ void Context::Render() {
     //     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     // }
 
+#if 1
     auto pos = glm::vec3( glm::sin(temp), glm::cos(temp), 0.0f);
     auto org = glm::vec3( 0.0f, 0.0f, 0.0f);
 
@@ -100,7 +101,7 @@ void Context::Render() {
     m_program->SetUniform("transform", projection * view * org_model);
 
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
+#endif
 }
 
 bool Context::Init() {
@@ -157,19 +158,18 @@ bool Context::Init() {
         20, 22, 21, 22, 20, 23,
     };
 
+#if 1
     for(int idx=0; idx<120; ++idx){
         
         int x = idx%5;
         
         if(x == 3 || x == 4){
-
         }
         else {
             vertices[idx] /= 2.0f;
         }
-
-        
     }
+#endif
 
     m_vertexLayout = VertexLayout::Create();
     m_vertexBuffer = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_STATIC_DRAW, vertices, sizeof(float) * 120);
@@ -177,8 +177,10 @@ bool Context::Init() {
 
     // XYZ coordinates
     m_vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0);
+
     // RGB
     //m_vertexLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float)*8, sizeof(float)*3);
+
     // Texture ST coordinates
     m_vertexLayout->SetAttrib(2, 2, GL_FLOAT, GL_FALSE, sizeof(float)*5, sizeof(float)*3);
 

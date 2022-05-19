@@ -17,9 +17,6 @@ void Context::Render() {
 
     static float temp = 0.0f;
 
-    // if(ImGui::Begin("my first ImGui window")){
-    //     ImGui::Text("this is first text..");
-    // }
     if(ImGui::Begin("ui window")){
 
         if(ImGui::ColorEdit4("clear color", glm::value_ptr(m_clearColor)) ) {

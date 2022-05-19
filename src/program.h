@@ -14,8 +14,17 @@ public:
     uint32_t Get() const { return m_program; }
     void Use() const;
 
+    // transfter integer
     void SetUniform(const std::string& name, int value) const;
+
+    // transfer 4x4 matrix
     void SetUniform(const std::string& name, const glm::mat4& value) const;
+
+    // transfer float value
+    void SetUniform(const std::string& name, float value) const;
+
+    // transfer 3d vector
+    void SetUniform(const std::string& name, const glm::vec3& value) const;
 private:
     Program() {}
     bool Link(

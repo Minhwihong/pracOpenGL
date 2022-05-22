@@ -19,6 +19,8 @@ void Context::Render() {
 
     if(ImGui::Begin("ui window")){
 
+        
+
         if(ImGui::ColorEdit4("clear color", glm::value_ptr(m_clearColor)) ) {
             glClearColor(m_clearColor.x, m_clearColor.y, m_clearColor.z, m_clearColor.w);
         }
@@ -34,18 +36,18 @@ void Context::Render() {
             m_cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
         }
 
-        if(ImGui::CollapsingHeader("light")){
+        if(ImGui::CollapsingHeader("light", ImGuiTreeNodeFlags_DefaultOpen)){
+            ImGui::DragFloat3("light pos", glm::value_ptr(m_lightPos), 0.01f);
             ImGui::ColorEdit3("light color", glm::value_ptr(m_lightColor));
             ImGui::ColorEdit3("object color", glm::value_ptr(m_objectColor));
             ImGui::SliderFloat("ambient strength", &m_ambientStrength, 0.0f, 1.0f);
         }
+
+        ImGui::Checkbox("animation", &m_animation);
     }
     ImGui::End();
 
-    m_program->Use();
-    m_program->SetUniform("lightColor", m_lightColor);
-    m_program->SetUniform("objectColor", m_objectColor);
-    m_program->SetUniform("ambientStrength", m_ambientStrength);
+    
     
     std::vector<glm::vec3> cubePositions = {
         glm::vec3( 0.0f, 0.0f, 0.0f),
@@ -76,14 +78,38 @@ void Context::Render() {
     // 카메라의 3축의 단위벡터로부터 카메라 뷰 행렬을 계산하는 glm 함수
     auto view = glm::lookAt(m_cameraPos, m_cameraFront+m_cameraPos, m_cameraUp);
 
+
+    /* ****************************************** 광원에 작은 큐브 그리기 ****************************************** */
+    auto lightModelTransform = glm::translate(glm::mat4(1.0), m_lightPos) * glm::scale(glm::mat4(1.0), glm::vec3(0.1f));
+    m_program->Use();
+    m_program->SetUniform("lightPos", m_lightPos);
+    m_program->SetUniform("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+    m_program->SetUniform("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
+    m_program->SetUniform("ambientStrength", 1.0f);
+    m_program->SetUniform("transform", projection*view*lightModelTransform);
+    m_program->SetUniform("modelTransform", lightModelTransform);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    /* ********************************************************************************************************* */
+
+
+    m_program->Use();
+    m_program->SetUniform("lightPos", m_lightPos);
+    m_program->SetUniform("lightColor", m_lightColor);
+    m_program->SetUniform("objectColor", m_objectColor);
+    m_program->SetUniform("ambientStrength", m_ambientStrength);
+
     for(int idx=0; idx<cubePositions.size(); ++idx){
         auto& pos = cubePositions[idx];
 
         auto model = glm::translate(glm::mat4(1.0f), pos);
-        model =glm::rotate(model, glm::radians((float)glfwGetTime()*120.0f  + 20*(float)idx), glm::vec3(1.0f, 0.2f, 0.0f));
+        //model =glm::rotate(model, glm::radians((float)glfwGetTime()*120.0f  + 20*(float)idx), glm::vec3(1.0f, 0.2f, 0.0f));
+        model =glm::rotate(model, 
+            glm::radians((m_animation ? (float)glfwGetTime() : 0.0f) *120.0f + 20*(float)idx), 
+            glm::vec3(1.0f, 0.2f, 0.0f));
 
         auto transform = projection * view * model;
         m_program->SetUniform("transform", transform);
+        m_program->SetUniform("modelTransform", model);
 
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     }

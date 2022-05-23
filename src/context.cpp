@@ -2,6 +2,19 @@
 #include "image.h"
 #include <imgui.h>
 
+static std::vector<glm::vec3> cubePositions = {
+    glm::vec3( 0.0f, 0.0f, 0.0f),
+    glm::vec3( 2.0f, 5.0f, -15.0f),
+    glm::vec3(-1.5f, -2.2f, -2.5f),
+    glm::vec3(-3.8f, -2.0f, -12.3f),
+    glm::vec3( 2.4f, -0.4f, -3.5f),
+    glm::vec3(-1.7f, 3.0f, -7.5f),
+    glm::vec3( 1.3f, -2.0f, -2.5f),
+    glm::vec3( 1.5f, 2.0f, -2.5f),
+    glm::vec3( 1.5f, 0.2f, -1.5f),
+    glm::vec3(-1.3f, 1.0f, -1.5f),
+};
+
 
 std::unique_ptr<Context> Context::Create() {
 
@@ -17,9 +30,9 @@ void Context::Render() {
 
     static float temp = 0.0f;
 
-    if(ImGui::Begin("ui window")){
+    /* ****************************************** ImGui Rendering ****************************************** */
 
-        
+    if(ImGui::Begin("ui window")){
 
         if(ImGui::ColorEdit4("clear color", glm::value_ptr(m_clearColor)) ) {
             glClearColor(m_clearColor.x, m_clearColor.y, m_clearColor.z, m_clearColor.w);
@@ -46,26 +59,13 @@ void Context::Render() {
         ImGui::Checkbox("animation", &m_animation);
     }
     ImGui::End();
-
+    /* ********************************************************************************************************* */
     
-    
-    std::vector<glm::vec3> cubePositions = {
-        glm::vec3( 0.0f, 0.0f, 0.0f),
-        glm::vec3( 2.0f, 5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3( 2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f, 3.0f, -7.5f),
-        glm::vec3( 1.3f, -2.0f, -2.5f),
-        glm::vec3( 1.5f, 2.0f, -2.5f),
-        glm::vec3( 1.5f, 0.2f, -1.5f),
-        glm::vec3(-1.3f, 1.0f, -1.5f),
-    };
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
-
+    /* **************************************** Local좌표를 카메라 좌표로 변환 *************************************** */
     m_cameraFront = glm::rotate(glm::mat4(1.0f), glm::radians(m_cameraYaw), glm::vec3(0.0f, 1.0f, 0.0f)) *
                         glm::rotate(glm::mat4(1.0f), glm::radians(m_cameraPitch), glm::vec3(1.0f, 0.0f, 0.0f) ) *
                         glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);     // (0.0f, 0.0f, -1.0f, 0.0f)에서 마지막에 0.0을 넣은 것은 평행이동이 안되게 하기 위함
@@ -77,6 +77,9 @@ void Context::Render() {
 
     // 카메라의 3축의 단위벡터로부터 카메라 뷰 행렬을 계산하는 glm 함수
     auto view = glm::lookAt(m_cameraPos, m_cameraFront+m_cameraPos, m_cameraUp);
+
+    /* ********************************************************************************************************* */
+
 
 
     /* ****************************************** 광원에 작은 큐브 그리기 ****************************************** */
@@ -92,6 +95,7 @@ void Context::Render() {
     /* ********************************************************************************************************* */
 
 
+    /* ***************************************** 회전하는 큐브 여러개 그리기 ****************************************** */
     m_program->Use();
     m_program->SetUniform("lightPos", m_lightPos);
     m_program->SetUniform("lightColor", m_lightColor);
@@ -113,7 +117,7 @@ void Context::Render() {
 
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     }
-
+    /* ********************************************************************************************************* */
 }
 
 bool Context::Init() {

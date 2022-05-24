@@ -24,10 +24,15 @@ private:
     bool Init();
     
     std::unique_ptr<Program>  m_program;
-    std::unique_ptr<VertexLayout> m_vertexLayout;
+    std::unique_ptr<VertexLayout> m_objVertexLayout;
+    std::unique_ptr<VertexLayout> m_lineLayout;
+    
 
-    std::unique_ptr<Buffer> m_vertexBuffer;
+    std::unique_ptr<Buffer> m_objVertexBuf;
     std::unique_ptr<Buffer> m_indexBuffer;
+
+    std::unique_ptr<Buffer> m_lineVertexBuf;
+    std::unique_ptr<Buffer> m_lineBuf;
 
     std::unique_ptr<Texture> m_texture;
     std::unique_ptr<Texture> m_texture2;

@@ -3,6 +3,85 @@
 #include <imgui.h>
 
 
+static std::vector<glm::vec3> cubePositions = {
+        glm::vec3( 0.0f, 0.0f, 0.0f),
+        glm::vec3( 2.0f, 5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3( 2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f, 3.0f, -7.5f),
+        glm::vec3( 1.3f, -2.0f, -2.5f),
+        glm::vec3( 1.5f, 2.0f, -2.5f),
+        glm::vec3( 1.5f, 0.2f, -1.5f),
+        glm::vec3(-1.3f, 1.0f, -1.5f),
+    };
+
+
+float vertices[] = {
+    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f, 0.0f, 1.0f,
+
+    -0.5f, -0.5f,  0.5f, 0.0f, 0.0f,
+        0.5f, -0.5f,  0.5f, 1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f, 1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f, 0.0f, 1.0f,
+
+    -0.5f,  0.5f,  0.5f, 1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f, 0.0f, 0.0f,
+
+        0.5f,  0.5f,  0.5f, 1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, -0.5f,  0.5f, 0.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, -0.5f,  0.5f, 1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f, 0.0f, 0.0f,
+
+    -0.5f,  0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f,  0.5f,  0.5f, 1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f, 0.0f, 0.0f,
+};
+
+uint32_t indices[] = {
+        0,  2,  1,  2,  0,  3,
+        4,  5,  6,  6,  7,  4,
+        8,  9, 10, 10, 11,  8,
+    12, 14, 13, 14, 12, 15,
+    16, 17, 18, 18, 19, 16,
+    20, 22, 21, 22, 20, 23,
+};
+
+static float line[] = {
+    0.0, 0.0,
+    1.0, 1.0
+};
+
+ GLfloat lineVertices[] =
+{
+    200, 100, 0,
+    100, 300, 0
+};
+
+GLfloat triangle_vertices[] = {
+    -0.5f, -0.5f, 0.0f,
+     0.5f, -0.5f, 0.0f,
+     0.0f,  0.5f, 0.0f
+};
+
+
+
+
+
+static unsigned int line_buf;
+static unsigned int vao_line;
+
 std::unique_ptr<Context> Context::Create() {
 
     auto context = std::unique_ptr<Context>(new Context());
@@ -40,22 +119,11 @@ void Context::Render() {
     ImGui::End();
 
     
-    std::vector<glm::vec3> cubePositions = {
-        glm::vec3( 0.0f, 0.0f, 0.0f),
-        glm::vec3( 2.0f, 5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3( 2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f, 3.0f, -7.5f),
-        glm::vec3( 1.3f, -2.0f, -2.5f),
-        glm::vec3( 1.5f, 2.0f, -2.5f),
-        glm::vec3( 1.5f, 0.2f, -1.5f),
-        glm::vec3(-1.3f, 1.0f, -1.5f),
-    };
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
+    m_objVertexLayout->Bind();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     m_cameraFront = glm::rotate(glm::mat4(1.0f), glm::radians(m_cameraYaw), glm::vec3(0.0f, 1.0f, 0.0f)) *
                         glm::rotate(glm::mat4(1.0f), glm::radians(m_cameraPitch), glm::vec3(1.0f, 0.0f, 0.0f) ) *
@@ -69,9 +137,8 @@ void Context::Render() {
     // 카메라의 3축의 단위벡터로부터 카메라 뷰 행렬을 계산하는 glm 함수
     auto view = glm::lookAt(m_cameraPos, m_cameraFront+m_cameraPos, m_cameraUp);
 
-    auto pos = glm::vec3( glm::sin(temp), glm::cos(temp), 0.0f);
-    auto org = glm::vec3( 0.0f, 0.0f, 0.0f);
 
+    auto pos = glm::vec3( glm::sin(temp), glm::cos(temp), 0.0f);
     temp = temp + 0.01f;
 
     auto model = glm::translate(glm::mat4(1.0f), pos);
@@ -83,12 +150,18 @@ void Context::Render() {
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 
-    auto org_model = glm::translate(glm::mat4(1.0f), org);
+    auto org = glm::vec3( 0.0f, 0.0f, 0.0f);
+    auto org_model = glm::translate(glm::mat4(1.0f), org);  // (0,0,0)의 벡터를 (0,0,0,1)의 동차좌표계로 변환(affine 공간)
 
     m_program->SetUniform("transform", projection * view * org_model);
 
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
+    
+    //glBindVertexArray(vao_line);
+    m_lineLayout->Bind();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 bool Context::Init() {
@@ -103,49 +176,6 @@ bool Context::Init() {
     //     -0.5f, 0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f // top left, yellow
     // };
 
-
-    float vertices[] = {
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f, 0.0f, 1.0f,
-
-        -0.5f, -0.5f,  0.5f, 0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f, 1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f, 1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f, 0.0f, 1.0f,
-
-        -0.5f,  0.5f,  0.5f, 1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f, 0.0f, 0.0f,
-
-         0.5f,  0.5f,  0.5f, 1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f, 0.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f, 1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f, 0.0f, 0.0f,
-
-        -0.5f,  0.5f, -0.5f, 0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f, 1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f, 0.0f, 0.0f,
-    };
-
-    uint32_t indices[] = {
-         0,  2,  1,  2,  0,  3,
-         4,  5,  6,  6,  7,  4,
-         8,  9, 10, 10, 11,  8,
-        12, 14, 13, 14, 12, 15,
-        16, 17, 18, 18, 19, 16,
-        20, 22, 21, 22, 20, 23,
-    };
-
-
     for(int idx=0; idx<120; ++idx){
         
         int x = idx%5;
@@ -157,23 +187,39 @@ bool Context::Init() {
         }
     }
 
+    // glGenVertexArrays(1, &vao_line);    
+    // glGenBuffers(1, &line_buf); // Allocate memory for the triangle
 
-    m_vertexLayout = VertexLayout::Create();
-    m_vertexBuffer = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_STATIC_DRAW, vertices, sizeof(float) * 120);
+    // glBindVertexArray(vao_line);
+    // glBindBuffer(GL_ARRAY_BUFFER, line_buf);
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_vertices), triangle_vertices, GL_STATIC_DRAW);
 
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+    // glEnableVertexAttribArray(0);
+    //m_program->Use();
+
+
+    m_lineLayout = VertexLayout::Create();
+    m_lineBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_STATIC_DRAW, triangle_vertices, sizeof(float) * 3*3);
+    m_lineLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), 0);
+   
+    /* ************************************************************************************************** */
+
+
+    m_objVertexLayout = VertexLayout::Create();
+    m_objVertexBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_STATIC_DRAW, vertices, sizeof(float) * 120);
 
     // XYZ coordinates
-    m_vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0);
+    m_objVertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0);
 
     // RGB
     //m_vertexLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float)*8, sizeof(float)*3);
 
     // Texture ST coordinates
-    m_vertexLayout->SetAttrib(2, 2, GL_FLOAT, GL_FALSE, sizeof(float)*5, sizeof(float)*3);
-
-
-
+    m_objVertexLayout->SetAttrib(2, 2, GL_FLOAT, GL_FALSE, sizeof(float)*5, sizeof(float)*3);
     m_indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t) * 36);
+
+
 
     std::shared_ptr<Shader> vertShader = Shader::CreateFromFile("../shader/simple.vs", GL_VERTEX_SHADER);
     std::shared_ptr<Shader> fragShader = Shader::CreateFromFile("../shader/simple.fs", GL_FRAGMENT_SHADER);
@@ -192,7 +238,6 @@ bool Context::Init() {
     SPDLOG_INFO("program id: {}", m_program->Get());   
  
 
- 
     auto image = Image::Load("../image/container.jpg");
     auto image2 = Image::Load("../image/awesomeface.png");
 
@@ -212,7 +257,6 @@ bool Context::Init() {
     }
 
     glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
-
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_texture->Get());

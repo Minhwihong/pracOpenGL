@@ -23,7 +23,10 @@ private:
     Context() {}
     bool Init();
     
-    std::unique_ptr<Program>  m_program;
+    std::unique_ptr<Program>  m_tex_program;
+    std::unique_ptr<Program>  m_poly_program;
+
+
     std::unique_ptr<VertexLayout> m_objVertexLayout;
     std::unique_ptr<VertexLayout> m_lineLayout;
     

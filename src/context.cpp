@@ -58,21 +58,16 @@ uint32_t indices[] = {
     20, 22, 21, 22, 20, 23,
 };
 
-static float line[] = {
-    0.0, 0.0,
-    1.0, 1.0
-};
 
- GLfloat lineVertices[] =
-{
-    200, 100, 0,
-    100, 300, 0
-};
+
 
 GLfloat triangle_vertices[] = {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f
+    -3.0f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+     3.0f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+     0.0f, -3.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+     0.0f,  3.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+     0.0f,  0.0f,-3.0f, 0.0f, 0.0f, 1.0f,
+     0.0f,  0.0f, 3.0f, 0.0f, 0.0f, 1.0f,
 };
 
 
@@ -122,6 +117,7 @@ void Context::Render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
+    m_tex_program->Use();
     m_objVertexLayout->Bind();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -145,7 +141,7 @@ void Context::Render() {
     model =glm::rotate(model, glm::radians((float)glfwGetTime()*120.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
     auto transform = projection * view * model;
-    m_program->SetUniform("transform", transform);
+    m_tex_program->SetUniform("transform", transform);
 
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
@@ -153,15 +149,17 @@ void Context::Render() {
     auto org = glm::vec3( 0.0f, 0.0f, 0.0f);
     auto org_model = glm::translate(glm::mat4(1.0f), org);  // (0,0,0)의 벡터를 (0,0,0,1)의 동차좌표계로 변환(affine 공간)
 
-    m_program->SetUniform("transform", projection * view * org_model);
+    m_tex_program->SetUniform("transform", projection * view * org_model);
 
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
     
     //glBindVertexArray(vao_line);
+    
     m_lineLayout->Bind();
+    m_poly_program->Use();
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_LINES, 0, 6);
 }
 
 bool Context::Init() {
@@ -198,14 +196,15 @@ bool Context::Init() {
     // glEnableVertexAttribArray(0);
     //m_program->Use();
 
-
+    
     m_lineLayout = VertexLayout::Create();
-    m_lineBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_STATIC_DRAW, triangle_vertices, sizeof(float) * 3*3);
-    m_lineLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), 0);
-   
+    m_lineBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_STATIC_DRAW, triangle_vertices, sizeof(float)*6 * 6);
+    m_lineLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), 0);
+    m_lineLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float)*6, sizeof(float)*3);
+    //m_poly_program->Use();
     /* ************************************************************************************************** */
 
-
+   //m_tex_program->Use();
     m_objVertexLayout = VertexLayout::Create();
     m_objVertexBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_STATIC_DRAW, vertices, sizeof(float) * 120);
 
@@ -220,22 +219,43 @@ bool Context::Init() {
     m_indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t) * 36);
 
 
-
+    /* *********************************** Texture Program Create **************************************** */
     std::shared_ptr<Shader> vertShader = Shader::CreateFromFile("../shader/simple.vs", GL_VERTEX_SHADER);
     std::shared_ptr<Shader> fragShader = Shader::CreateFromFile("../shader/simple.fs", GL_FRAGMENT_SHADER);
 
     if (!vertShader || !fragShader)
         return false;
 
-    SPDLOG_INFO("vertex shader id: {}", vertShader->Get());
-    SPDLOG_INFO("fragment shader id: {}", fragShader->Get());
+    SPDLOG_INFO("texture vertex shader id: {}", vertShader->Get());
+    SPDLOG_INFO("texture fragment shader id: {}", fragShader->Get());
 
-    m_program = Program::Create({fragShader, vertShader});
+    m_tex_program = Program::Create({fragShader, vertShader});
 
-    if (!m_program)
+    if (!m_tex_program)
         return false;
 
-    SPDLOG_INFO("program id: {}", m_program->Get());   
+    SPDLOG_INFO("texture program id: {}", m_tex_program->Get());   
+    /* ***************************************************************************************************** */
+
+
+
+     /* *********************************** Texture Program Create **************************************** */
+    std::shared_ptr<Shader> vertShader_poly = Shader::CreateFromFile("../shader/polygon.vs", GL_VERTEX_SHADER);
+    std::shared_ptr<Shader> fragShader_poly = Shader::CreateFromFile("../shader/polygon.fs", GL_FRAGMENT_SHADER);
+
+    if (!vertShader_poly || !fragShader_poly)
+        return false;
+
+    SPDLOG_INFO("polygon vertex shader id: {}", vertShader_poly->Get());
+    SPDLOG_INFO("polygon fragment shader id: {}", fragShader_poly->Get());
+
+    m_poly_program = Program::Create({fragShader_poly, vertShader_poly});
+
+    if (!m_poly_program)
+        return false;
+
+    SPDLOG_INFO("polygon program id: {}", m_poly_program->Get());   
+    /* ***************************************************************************************************** */
  
 
     auto image = Image::Load("../image/container.jpg");
@@ -263,11 +283,11 @@ bool Context::Init() {
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, m_texture2->Get());
 
-    m_program->Use();
+    m_tex_program->Use();
     // use texture slot no.0
-    m_program->SetUniform("tex", 0);
+    m_tex_program->SetUniform("tex", 0);
     // use texture slot no.1
-    m_program->SetUniform("tex2", 1);
+    m_tex_program->SetUniform("tex2", 1);
  
     return true;
 }

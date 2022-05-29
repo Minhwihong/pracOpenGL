@@ -11,6 +11,8 @@ public:
     uint32_t Get() const { return m_buffer; }
     void Bind() const;
 
+    void DataModify(uint32_t offset, size_t size, const void* data);
+
 private:
     Buffer() {}
     bool Init(

@@ -22,6 +22,10 @@ void Buffer::Bind() const {
     glBindBuffer(m_bufferType, m_buffer);
 }
 
+
+
+
+
 bool Buffer::Init(uint32_t bufferType, uint32_t usage, const void* data, size_t dataSize) {
 
     m_bufferType = bufferType;
@@ -31,4 +35,12 @@ bool Buffer::Init(uint32_t bufferType, uint32_t usage, const void* data, size_t 
     Bind();
     glBufferData(m_bufferType, dataSize, data, usage);
     return true;
+}
+
+
+
+void Buffer::DataModify(uint32_t offset, size_t size, const void* data){
+
+    Bind();
+    glBufferSubData(m_bufferType, offset, size, data);
 }

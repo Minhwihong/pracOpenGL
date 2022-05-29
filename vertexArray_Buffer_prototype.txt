@@ -1,0 +1,30 @@
+
+// 정점 배열 객체 생성 및  객체 정보 저장변수(vao_line) 업데이트
+glGenVertexArrays(1, &vao_line);    
+
+// 정점 데이터 버퍼 생성 및 해당위치에 대한 포인터 업데이트 
+glGenBuffers(1, &line_buf); // Allocate memory for the triangle
+
+// OpenGL의 실행 문맥을 vao_line가 가리키는 배열객체와 바인딩 (OpenGL은 단일 실행 문맥만 가지고 있는 것인가?..)
+glBindVertexArray(vao_line);
+
+//
+glBindBuffer(GL_ARRAY_BUFFER, line_buf);
+glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_vertices), triangle_vertices, GL_STATIC_DRAW);
+
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+glEnableVertexAttribArray(0);
+
+
+
+
+    // float vertices[] = {
+    //     // Format [X, Y, Z, R, G, B, S, T]
+    //     //        (3D 좌표) (RGB색상 ) (텍스처좌표)
+
+    //     //X    Y      Z     R     G     B     S     T
+    //     0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right, red
+    //     0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right, green
+    //     -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left, blue
+    //     -0.5f, 0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f // top left, yellow
+    // };

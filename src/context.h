@@ -29,13 +29,15 @@ private:
 
     std::unique_ptr<VertexLayout> m_objVertexLayout;
     std::unique_ptr<VertexLayout> m_lineLayout;
+    std::unique_ptr<VertexLayout> m_polyLayout;
     
 
     std::unique_ptr<Buffer> m_objVertexBuf;
     std::unique_ptr<Buffer> m_indexBuffer;
 
-    std::unique_ptr<Buffer> m_lineVertexBuf;
+
     std::unique_ptr<Buffer> m_lineBuf;
+    std::unique_ptr<Buffer> m_polyBuf;
 
     std::unique_ptr<Texture> m_texture;
     std::unique_ptr<Texture> m_texture2;

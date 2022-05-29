@@ -1,7 +1,10 @@
 #include "context.h"
+#include "polygon.h"
 #include "image.h"
 #include <imgui.h>
 
+
+float* poly_circle;
 
 static std::vector<glm::vec3> cubePositions = {
         glm::vec3( 0.0f, 0.0f, 0.0f),
@@ -91,9 +94,6 @@ void Context::Render() {
 
     static float temp = 0.0f;
 
-    // if(ImGui::Begin("my first ImGui window")){
-    //     ImGui::Text("this is first text..");
-    // }
     if(ImGui::Begin("ui window")){
 
         if(ImGui::ColorEdit4("clear color", glm::value_ptr(m_clearColor)) ) {
@@ -117,10 +117,7 @@ void Context::Render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
-    m_tex_program->Use();
-    m_objVertexLayout->Bind();
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+   
     m_cameraFront = glm::rotate(glm::mat4(1.0f), glm::radians(m_cameraYaw), glm::vec3(0.0f, 1.0f, 0.0f)) *
                         glm::rotate(glm::mat4(1.0f), glm::radians(m_cameraPitch), glm::vec3(1.0f, 0.0f, 0.0f) ) *
                         glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);     // (0.0f, 0.0f, -1.0f, 0.0f)에서 마지막에 0.0을 넣은 것은 평행이동이 안되게 하기 위함
@@ -133,7 +130,6 @@ void Context::Render() {
     // 카메라의 3축의 단위벡터로부터 카메라 뷰 행렬을 계산하는 glm 함수
     auto view = glm::lookAt(m_cameraPos, m_cameraFront+m_cameraPos, m_cameraUp);
 
-
     auto pos = glm::vec3( glm::sin(temp), glm::cos(temp), 0.0f);
     temp = temp + 0.01f;
 
@@ -141,38 +137,37 @@ void Context::Render() {
     model =glm::rotate(model, glm::radians((float)glfwGetTime()*120.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
     auto transform = projection * view * model;
-    m_tex_program->SetUniform("transform", transform);
-
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 
     auto org = glm::vec3( 0.0f, 0.0f, 0.0f);
     auto org_model = glm::translate(glm::mat4(1.0f), org);  // (0,0,0)의 벡터를 (0,0,0,1)의 동차좌표계로 변환(affine 공간)
 
-    m_tex_program->SetUniform("transform", projection * view * org_model);
+    m_tex_program->Use();
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    m_objVertexLayout->Bind();
+    m_tex_program->SetUniform("transform", transform);
 
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-    
-    //glBindVertexArray(vao_line);
-    
-    m_lineLayout->Bind();
+
     m_poly_program->Use();
+    m_polyLayout->Bind();
+    m_poly_program->SetUniform("transform", projection * view * org_model);
+
+
+    m_polyBuf->DataModify(0, sizeof(float)*6 * 6, triangle_vertices);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawArrays(GL_LINES, 0, 6);
+
+
+    m_polyBuf->DataModify(0, sizeof(float)*18 * 6, poly_circle);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
 bool Context::Init() {
-    // float vertices[] = {
-    //     // Format [X, Y, Z, R, G, B, S, T]
-    //     //        (3D 좌표) (RGB색상 ) (텍스처좌표)
 
-    //     //X    Y      Z     R     G     B     S     T
-    //     0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right, red
-    //     0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right, green
-    //     -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left, blue
-    //     -0.5f, 0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f // top left, yellow
-    // };
 
     for(int idx=0; idx<120; ++idx){
         
@@ -185,26 +180,29 @@ bool Context::Init() {
         }
     }
 
-    // glGenVertexArrays(1, &vao_line);    
-    // glGenBuffers(1, &line_buf); // Allocate memory for the triangle
+    Polygon poly = Polygon();
 
-    // glBindVertexArray(vao_line);
-    // glBindBuffer(GL_ARRAY_BUFFER, line_buf);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_vertices), triangle_vertices, GL_STATIC_DRAW);
+    poly_circle = poly.Make_Circle(1.0f);
 
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
-    // glEnableVertexAttribArray(0);
-    //m_program->Use();
 
-    
+    /* ********************************** Coordinates Line Buffer ************************************** */
     m_lineLayout = VertexLayout::Create();
-    m_lineBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_STATIC_DRAW, triangle_vertices, sizeof(float)*6 * 6);
+    m_lineBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW, triangle_vertices, sizeof(float)*18 * 6);
     m_lineLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), 0);
     m_lineLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float)*6, sizeof(float)*3);
-    //m_poly_program->Use();
     /* ************************************************************************************************** */
 
-   //m_tex_program->Use();
+
+    /* ************************************* Polygon Buffer ****************************************** */
+    m_polyLayout= VertexLayout::Create();
+    m_polyBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW, poly_circle, sizeof(float)*18 * 6);
+    m_polyLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), 0);
+    m_polyLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float)*6, sizeof(float)*3);
+    /* ************************************************************************************************** */
+
+    
+
+    /* ************************************** Cube & Texture **************************************** */
     m_objVertexLayout = VertexLayout::Create();
     m_objVertexBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_STATIC_DRAW, vertices, sizeof(float) * 120);
 
@@ -217,9 +215,11 @@ bool Context::Init() {
     // Texture ST coordinates
     m_objVertexLayout->SetAttrib(2, 2, GL_FLOAT, GL_FALSE, sizeof(float)*5, sizeof(float)*3);
     m_indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t) * 36);
+    /* ************************************************************************************************** */
 
 
-    /* *********************************** Texture Program Create **************************************** */
+
+    /* ***************************** Shader for Texture Program Create ********************************** */
     std::shared_ptr<Shader> vertShader = Shader::CreateFromFile("../shader/simple.vs", GL_VERTEX_SHADER);
     std::shared_ptr<Shader> fragShader = Shader::CreateFromFile("../shader/simple.fs", GL_FRAGMENT_SHADER);
 
@@ -235,11 +235,11 @@ bool Context::Init() {
         return false;
 
     SPDLOG_INFO("texture program id: {}", m_tex_program->Get());   
-    /* ***************************************************************************************************** */
+    /* ************************************************************************************************** */
 
 
 
-     /* *********************************** Texture Program Create **************************************** */
+     /* **************************** Shader for Line&Polygon Program Create ***************************** */
     std::shared_ptr<Shader> vertShader_poly = Shader::CreateFromFile("../shader/polygon.vs", GL_VERTEX_SHADER);
     std::shared_ptr<Shader> fragShader_poly = Shader::CreateFromFile("../shader/polygon.fs", GL_FRAGMENT_SHADER);
 
@@ -258,6 +258,7 @@ bool Context::Init() {
     /* ***************************************************************************************************** */
  
 
+
     auto image = Image::Load("../image/container.jpg");
     auto image2 = Image::Load("../image/awesomeface.png");
 
@@ -275,6 +276,7 @@ bool Context::Init() {
     if(!m_texture){
         SPDLOG_ERROR("Texture loading failed..");
     }
+
 
     glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
 

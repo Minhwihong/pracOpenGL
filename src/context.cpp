@@ -4,7 +4,11 @@
 #include <imgui.h>
 
 
-float* poly_circle;
+float* circle2D_z;
+float* circle2D_y;
+
+size_t verCnt_2dCircle_z = 0;
+size_t size_2dCircle_y = 0;
 
 static std::vector<glm::vec3> cubePositions = {
         glm::vec3( 0.0f, 0.0f, 0.0f),
@@ -93,6 +97,8 @@ std::unique_ptr<Context> Context::Create() {
 void Context::Render() {
 
     static float temp = 0.0f;
+    static int iTemp = 0;
+    static int iTemp2 = 0;
 
     if(ImGui::Begin("ui window")){
 
@@ -152,18 +158,37 @@ void Context::Render() {
 
 
     m_poly_program->Use();
-    m_polyLayout->Bind();
+
+    m_lineLayout->Bind();
     m_poly_program->SetUniform("transform", projection * view * org_model);
-
-
-    m_polyBuf->DataModify(0, sizeof(float)*6 * 6, triangle_vertices);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawArrays(GL_LINES, 0, 6);
 
 
-    m_polyBuf->DataModify(0, sizeof(float)*18 * 6, poly_circle);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    m_polyLayout->Bind();
+    m_polyBuf->DataModify(0, sizeof(float)*6*verCnt_2dCircle_z, circle2D_z);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glDrawArrays(GL_LINES, 0, verCnt_2dCircle_z);
+    glDrawArrays(GL_LINES, 0, iTemp2);
+
+    m_polyBuf->DataModify(0, sizeof(float)*6*verCnt_2dCircle_z, circle2D_y);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glDrawArrays(GL_LINES, 0, iTemp2);
+
+
+
+    iTemp++;
+
+    if(iTemp > 4){
+        iTemp = 0;
+
+        iTemp2++;
+
+        if(iTemp2 > verCnt_2dCircle_z){
+            iTemp2 = 0;
+        }
+    }
 }
 
 bool Context::Init() {
@@ -180,22 +205,23 @@ bool Context::Init() {
         }
     }
 
-    Polygon poly = Polygon();
-
-    poly_circle = poly.Make_Circle(1.0f);
-
-
-    /* ********************************** Coordinates Line Buffer ************************************** */
+    
+    /* **************************** Coordinates Line VertexLayout&Buffer ******************************** */
     m_lineLayout = VertexLayout::Create();
-    m_lineBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW, triangle_vertices, sizeof(float)*18 * 6);
+    m_lineBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_STATIC_DRAW, triangle_vertices, sizeof(float)*18 * 6);
     m_lineLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), 0);
     m_lineLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float)*6, sizeof(float)*3);
     /* ************************************************************************************************** */
 
 
-    /* ************************************* Polygon Buffer ****************************************** */
+    /* ********************************* Polygon VertexLayout&Buffer ************************************ */
+    Polygon poly = Polygon();
+    circle2D_z = poly.Make_Circle(1.0f, 180, &verCnt_2dCircle_z, PLANE_Z, 0);
+    circle2D_y = poly.Make_Circle(1.0f, 180, &verCnt_2dCircle_z, PLANE_Y, 0);
+
+
     m_polyLayout= VertexLayout::Create();
-    m_polyBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW, poly_circle, sizeof(float)*18 * 6);
+    m_polyBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW, circle2D_z, sizeof(float)*6*verCnt_2dCircle_z);
     m_polyLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), 0);
     m_polyLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float)*6, sizeof(float)*3);
     /* ************************************************************************************************** */

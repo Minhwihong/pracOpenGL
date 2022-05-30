@@ -6,9 +6,16 @@
 
 float* circle2D_z;
 float* circle2D_y;
+float* cylinder;
+
+uint32_t* element_circle2Dz;
+uint32_t* element_circle2Dy;
 
 size_t verCnt_2dCircle_z = 0;
 size_t size_2dCircle_y = 0;
+size_t size_cylinder;
+
+int circle_resol = 0;
 
 static std::vector<glm::vec3> cubePositions = {
         glm::vec3( 0.0f, 0.0f, 0.0f),
@@ -168,13 +175,16 @@ void Context::Render() {
 
     m_polyLayout->Bind();
     m_polyBuf->DataModify(0, sizeof(float)*6*verCnt_2dCircle_z, circle2D_z);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    //glDrawArrays(GL_LINES, 0, verCnt_2dCircle_z);
-    glDrawArrays(GL_LINES, 0, iTemp2);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    //glDrawArrays(GL_TRIANGLES, 0, verCnt_2dCircle_z);
+    glDrawElements(GL_TRIANGLES, circle_resol*3, GL_UNSIGNED_INT, 0);
+    //glDrawArrays(GL_LINES, 0, iTemp2);
 
     m_polyBuf->DataModify(0, sizeof(float)*6*verCnt_2dCircle_z, circle2D_y);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glDrawArrays(GL_LINES, 0, iTemp2);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glDrawArrays(GL_LINES, 0, verCnt_2dCircle_z);
+    glDrawElements(GL_TRIANGLES, circle_resol*3, GL_UNSIGNED_INT, 0);
+    //glDrawArrays(GL_LINES, 0, iTemp2);
 
 
 
@@ -216,14 +226,22 @@ bool Context::Init() {
 
     /* ********************************* Polygon VertexLayout&Buffer ************************************ */
     Polygon poly = Polygon();
-    circle2D_z = poly.Make_Circle(1.0f, 180, &verCnt_2dCircle_z, PLANE_Z, 0);
-    circle2D_y = poly.Make_Circle(1.0f, 180, &verCnt_2dCircle_z, PLANE_Y, 0);
+    circle_resol = 90;
+
+    circle2D_z = poly.Make_Circle(1.0f, circle_resol, &verCnt_2dCircle_z, PLANE_Z, 0);
+    element_circle2Dz = poly.GetElementArr_Circle();
+    circle2D_y = poly.Make_Circle(1.0f, circle_resol, &verCnt_2dCircle_z, PLANE_Y, 0);
+    element_circle2Dy = poly.GetElementArr_Circle();
+
+    //cylinder = poly.Make_3Dcylinder(1.0f, 0.5f, 12, &size_cylinder, PLANE_Z);
 
 
     m_polyLayout= VertexLayout::Create();
     m_polyBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW, circle2D_z, sizeof(float)*6*verCnt_2dCircle_z);
     m_polyLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), 0);
     m_polyLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float)*6, sizeof(float)*3);
+
+    m_idxPolyBuf = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW, element_circle2Dz, sizeof(uint32_t)*circle_resol*3);
     /* ************************************************************************************************** */
 
     

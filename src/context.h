@@ -38,6 +38,7 @@ private:
 
     std::unique_ptr<Buffer> m_lineBuf;
     std::unique_ptr<Buffer> m_polyBuf;
+    std::unique_ptr<Buffer> m_idxPolyBuf;
 
     std::unique_ptr<Texture> m_texture;
     std::unique_ptr<Texture> m_texture2;

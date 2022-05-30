@@ -24,9 +24,9 @@ class Polygon {
 public:
 
     Polygon(){}
-    float* Make_Circle(float r, int resol, size_t* point_cnt, int plane, u_int32_t color);
+    float* Make_Circle(float r, int resol, size_t* point_cnt, size_t* array_size, int plane, u_int32_t color);
     uint32_t* GetElementArr_Circle();
-    float* Make_3Dcylinder(float r, float h, int resol, size_t* point_cnt, int plane);
+    float* Make_3Dcylinder(float r, float h, int resol, size_t* point_cnt, size_t* array_size, int plane);
 
 private:
     float* arrCircle{nullptr};

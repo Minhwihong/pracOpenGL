@@ -4,7 +4,7 @@
 #define RESOLUTION_CIRCLE   20
 #define BUF_CNT_CIRCLE     (int)(360 / RESOLUTION_CIRCLE)
 
-float* Polygon::Make_Circle(float r, int resol, size_t* point_cnt, int plane, uint32_t color){
+float* Polygon::Make_Circle(float r, int resol, size_t* point_cnt, size_t* array_size, int plane, uint32_t color){
 
     float* arr = new float[(int)(360 * (float)resol / 360) * 6 + 6]; 
 
@@ -85,12 +85,12 @@ uint32_t* Polygon::GetElementArr_Circle(){
         if(idx+1 < circleResol){
             arr[idx*3 + 2]  = idx+2;
 
-            SPDLOG_INFO("circle element arr v1: {}, v2: {}, v3: {}", 0,idx+1,idx+2);
+            //SPDLOG_INFO("circle element arr v1: {}, v2: {}, v3: {}", 0,idx+1,idx+2);
         }
         else{
             arr[idx*3 + 2]  = 1;
 
-            SPDLOG_INFO("circle element arr v1: {}, v2: {}, v3: {}", 0,idx+1,1);
+            //SPDLOG_INFO("circle element arr v1: {}, v2: {}, v3: {}", 0,idx+1,1);
         }
 
         
@@ -101,9 +101,9 @@ uint32_t* Polygon::GetElementArr_Circle(){
 }
 
 
-float* Polygon::Make_3Dcylinder(float r, float h, int resol, size_t* point_cnt, int plane){
+float* Polygon::Make_3Dcylinder(float r, float h, int resol, size_t* point_cnt, size_t* array_size, int plane){
 
-    size_t circle_ver_cnt = (size_t)(360 * (float)resol / 360);
+    size_t circle_ver_cnt = (size_t)(360 * (float)resol / 360 * 6);
     
     
     float* arr = new float[circle_ver_cnt*2 + 12]; 
@@ -116,6 +116,9 @@ float* Polygon::Make_3Dcylinder(float r, float h, int resol, size_t* point_cnt, 
     int idx = 0;
     int inc = 360 / resol;
     int offset = 0;
+
+    *array_size = 0;
+    *point_cnt = 0;
 
     //원통의 윗부분
     arr[offset++] = 0;
@@ -134,6 +137,9 @@ float* Polygon::Make_3Dcylinder(float r, float h, int resol, size_t* point_cnt, 
     arr[offset++] = 0.0f;
     arr[offset++] = 1.0f;
     arr[offset++] = 1.0f;
+
+    *array_size = offset;
+    *point_cnt = 2;
 
     for(int deg=0; deg< 360; deg = deg + inc, idx++){
 
@@ -173,17 +179,17 @@ float* Polygon::Make_3Dcylinder(float r, float h, int resol, size_t* point_cnt, 
         arr[offset + idx*12 + 10] = 0.0f;
         arr[offset + idx*12 + 11] = 1.0f;
         
+        (*array_size) += 12;
+        (*point_cnt) += 2;
     }
 
+
     SPDLOG_INFO("2D circle resolution {}-deg/360", resol);
-    SPDLOG_INFO("2D circle Vertex number : {}", idx+1);
-    SPDLOG_INFO("2D circle Array Size: {}", (int)(360 * resol / 360) * 6); 
-    
+    SPDLOG_INFO("2D circle Vertex number : {}", *point_cnt);
+    SPDLOG_INFO("2D circle Array Size: {}", *array_size); 
 
-    *point_cnt = idx+1;
-
-    arrCircle = arr;
-    circleResol = resol;
+   //arrCircle = arr;
+    //circleResol = resol;
 
     return arr;
 }

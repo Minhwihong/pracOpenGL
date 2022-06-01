@@ -27,6 +27,7 @@ public:
     float* Make_Circle(float r, int resol, size_t* point_cnt, size_t* array_size, int plane, u_int32_t color);
     uint32_t* GetElementArr_Circle();
     float* Make_3Dcylinder(float r, float h, int resol, size_t* point_cnt, size_t* array_size, int plane);
+    uint32_t* GetElementArr_3Dcylinder(float* src, size_t resolution, uint32_t* arr_size);
 
 private:
     float* arrCircle{nullptr};

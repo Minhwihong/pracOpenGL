@@ -7,6 +7,8 @@
 float* circle2D_z;
 float* circle2D_y;
 float* cylinder;
+uint32_t* elem_cylinder;
+uint32_t elem_cylinder_len = 0;
 
 uint32_t* element_circle2Dz;
 uint32_t* element_circle2Dy;
@@ -176,8 +178,10 @@ void Context::Render() {
 
     m_polyLayout->Bind();
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDrawArrays(GL_TRIANGLES, 0, size_cylinder);
+    glPolygonMode(GL_FRONT, GL_LINE);
+    //glDrawArrays(GL_TRIANGLES, 0, size_cylinder);
+    glDrawElements(GL_TRIANGLES, elem_cylinder_len, GL_UNSIGNED_INT, 0);
+
 
     //m_polyBuf->DataModify(0, sizeof(float)*6*verCnt_2dCircle_z, circle2D_z);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -238,7 +242,10 @@ bool Context::Init() {
     // circle2D_y = poly.Make_Circle(1.0f, circle_resol, &verCnt_2dCircle_z, PLANE_Y, 0);
     // element_circle2Dy = poly.GetElementArr_Circle();
 
-    cylinder = poly.Make_3Dcylinder(1.0f, 0.5f, 180, &size_cylinder, &size_arr_cylinder, PLANE_Z);
+
+    cylinder = poly.Make_3Dcylinder(0.5f, 1.5f, 90, &size_cylinder, &size_arr_cylinder, PLANE_Z);
+
+    elem_cylinder = poly.GetElementArr_3Dcylinder(cylinder, 90, &elem_cylinder_len);
 
 
     m_polyLayout= VertexLayout::Create();
@@ -249,7 +256,8 @@ bool Context::Init() {
     m_polyLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), 0);
     m_polyLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float)*6, sizeof(float)*3);
 
-    m_idxPolyBuf = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW, element_circle2Dz, sizeof(uint32_t)*circle_resol*3);
+    //m_idxPolyBuf = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW, element_circle2Dz, sizeof(uint32_t)*circle_resol*3);
+    m_idxPolyBuf = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW, elem_cylinder, sizeof(uint32_t)*elem_cylinder_len);
     /* ************************************************************************************************** */
 
     

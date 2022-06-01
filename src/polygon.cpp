@@ -111,7 +111,7 @@ float* Polygon::Make_3Dcylinder(float r, float h, int resol, size_t* point_cnt, 
     float x1 = 0.0f, x2 = 0.0f;
     float y1 = 0.0f, y2 = 0.0f;
     float z1 = 0.0f, z2 = 0.0f;
-    h = 0.5;
+    //h = 0.5;
 
     int idx = 0;
     int inc = 360 / resol;
@@ -162,8 +162,8 @@ float* Polygon::Make_3Dcylinder(float r, float h, int resol, size_t* point_cnt, 
         }
         
         //원통의 윗부분
-        arr[offset + idx*12 + 0] = x1;
-        arr[offset + idx*12 + 1] = y1;
+        arr[offset + idx*12 + 0] = x1*r;
+        arr[offset + idx*12 + 1] = y1*r;
         arr[offset + idx*12 + 2] = z1;
 
         arr[offset + idx*12 + 3] = 0.0f + ((float)idx/resol);
@@ -171,8 +171,8 @@ float* Polygon::Make_3Dcylinder(float r, float h, int resol, size_t* point_cnt, 
         arr[offset + idx*12 + 5] = 1.0f;
 
         //원통의 아랫부분
-        arr[offset + idx*12 + 6] = x1;
-        arr[offset + idx*12 + 7] = y1;
+        arr[offset + idx*12 + 6] = x1*r;
+        arr[offset + idx*12 + 7] = y1*r;
         arr[offset + idx*12 + 8] = h;
 
         arr[offset + idx*12 + 9] = 0.0f + ((float)idx/resol);
@@ -184,12 +184,73 @@ float* Polygon::Make_3Dcylinder(float r, float h, int resol, size_t* point_cnt, 
     }
 
 
-    SPDLOG_INFO("2D circle resolution {}-deg/360", resol);
-    SPDLOG_INFO("2D circle Vertex number : {}", *point_cnt);
-    SPDLOG_INFO("2D circle Array Size: {}", *array_size); 
+    SPDLOG_INFO("3D cylinder resolution {}-deg/360", resol);
+    SPDLOG_INFO("3D cylinder Vertex number : {}", *point_cnt);
+    SPDLOG_INFO("3D cylinder Array Size: {}", *array_size); 
 
    //arrCircle = arr;
     //circleResol = resol;
 
     return arr;
+}
+
+
+uint32_t* Polygon::GetElementArr_3Dcylinder(float* src, size_t resolution, uint32_t* arr_size){
+
+    int idx = 0;
+
+
+
+    uint32_t* arr = new uint32_t[resolution*12];
+
+    for(idx=0; idx<resolution; ++idx){
+        
+
+        if(idx+1 != resolution){
+
+            arr[idx*12 + 0] = 0;
+            arr[idx*12 + 1] = idx*2 + 2;
+            arr[idx*12 + 2] = idx*2 + 4;
+
+            arr[idx*12 + 3] = idx*2 + 2;
+            arr[idx*12 + 4] = idx*2 + 3;
+            arr[idx*12 + 5] = idx*2 + 5;
+
+            arr[idx*12 + 6] = idx*2 + 2;
+            arr[idx*12 + 7] = idx*2 + 4;
+            arr[idx*12 + 8] = idx*2 + 5;
+
+            arr[idx*12 + 9] = idx*2 + 3;
+            arr[idx*12 + 10] = idx*2 + 5;
+            arr[idx*12 + 11] = 1;
+        }
+        else {
+
+            arr[idx*12 + 0] = 0;
+            arr[idx*12 + 1] = idx*2 + 2;
+            arr[idx*12 + 2] = 2;
+
+            arr[idx*12 + 3] = idx*2 + 2;
+            arr[idx*12 + 4] = idx*2 + 3;
+            arr[idx*12 + 5] = 3;
+
+            arr[idx*12 + 6] = idx*2 + 2;
+            arr[idx*12 + 7] = 2;
+            arr[idx*12 + 8] = 3;
+
+            arr[idx*12 + 9] = idx*2 + 3;
+            arr[idx*12 + 10] = 3;
+            arr[idx*12 + 11] = 1;
+
+        }
+
+        
+    }
+
+    
+
+    *arr_size = 12 * (idx+1);
+
+    return arr;
+
 }

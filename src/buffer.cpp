@@ -22,6 +22,10 @@ void Buffer::Bind() const {
     glBindBuffer(m_bufferType, m_buffer);
 }
 
+void Buffer::UnBind() const {
+
+    
+}
 
 
 

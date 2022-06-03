@@ -10,6 +10,7 @@ public:
     ~Buffer();
     uint32_t Get() const { return m_buffer; }
     void Bind() const;
+    void UnBind() const;
 
     void DataModify(uint32_t offset, size_t size, const void* data);
 

@@ -37,7 +37,8 @@ private:
 
 
     std::unique_ptr<Buffer> m_lineBuf;
-    std::unique_ptr<Buffer> m_polyBuf;
+    std::unique_ptr<Buffer> m_polyPosBuf;
+    std::unique_ptr<Buffer> m_polyclrBuf;
     std::unique_ptr<Buffer> m_idxPolyBuf;
 
     std::unique_ptr<Texture> m_texture;

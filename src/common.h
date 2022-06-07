@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <algorithm>
 #include <optional>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>

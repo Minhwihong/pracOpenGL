@@ -20,6 +20,8 @@ size_t size_arr_cylinder;
 
 int circle_resol = 0;
 
+Polygon poly = Polygon();
+
 static std::vector<glm::vec3> cubePositions = {
         glm::vec3( 0.0f, 0.0f, 0.0f),
         glm::vec3( 2.0f, 5.0f, -15.0f),
@@ -167,20 +169,28 @@ void Context::Render() {
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 
-    m_poly_program->Use();
-
+    m_coord_program->Use();
     m_lineLayout->Bind();
-    m_poly_program->SetUniform("transform", projection * view * org_model);
+
+    m_coord_program->SetUniform("transform", projection * view * org_model);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawArrays(GL_LINES, 0, 6);
 
 
-
+    m_poly_program->Use();
     m_polyLayout->Bind();
+    m_poly_program->SetUniform("transform", projection * view * org_model);
 
-    glPolygonMode(GL_FRONT, GL_LINE);
-    //glDrawArrays(GL_TRIANGLES, 0, size_cylinder);
-    glDrawElements(GL_TRIANGLES, elem_cylinder_len, GL_UNSIGNED_INT, 0);
+
+    glm::vec3 color3 = glm::vec3(0.3f, 0.1f, 0.9f);
+    m_poly_program->SetUniform("fColor", color3);
+    
+    glDrawElements(GL_TRIANGLES, circle_resol*3, GL_UNSIGNED_INT, 0);
+
+    color3 = glm::vec3(0.7f, 0.3f, 0.1f);
+    m_poly_program->SetUniform("fColor", color3);
+
+    glDrawElements(GL_TRIANGLES, circle_resol*8, GL_UNSIGNED_INT, (void*)(circle_resol*3));
 
 
     //m_polyBuf->DataModify(0, sizeof(float)*6*verCnt_2dCircle_z, circle2D_z);
@@ -195,19 +205,6 @@ void Context::Render() {
     //glDrawElements(GL_TRIANGLES, circle_resol*3, GL_UNSIGNED_INT, 0);
     //glDrawArrays(GL_LINES, 0, iTemp2);
 
-
-
-    iTemp++;
-
-    if(iTemp > 4){
-        iTemp = 0;
-
-        iTemp2++;
-
-        if(iTemp2 > verCnt_2dCircle_z){
-            iTemp2 = 0;
-        }
-    }
 }
 
 bool Context::Init() {
@@ -234,30 +231,37 @@ bool Context::Init() {
 
 
     /* ********************************* Polygon VertexLayout&Buffer ************************************ */
-    Polygon poly = Polygon();
-    circle_resol = 90;
-
-    // circle2D_z = poly.Make_Circle(1.0f, circle_resol, &verCnt_2dCircle_z, PLANE_Z, 0);
-    // element_circle2Dz = poly.GetElementArr_Circle();
-    // circle2D_y = poly.Make_Circle(1.0f, circle_resol, &verCnt_2dCircle_z, PLANE_Y, 0);
-    // element_circle2Dy = poly.GetElementArr_Circle();
+     circle_resol = 45;
 
 
-    cylinder = poly.Make_3Dcylinder(0.5f, 1.5f, 90, &size_cylinder, &size_arr_cylinder, PLANE_Z);
+    poly.Make_3Dcylinder(0.5f, 1.5f, circle_resol);
+    elem_cylinder = poly.GetElementArr_3Dcylinder(poly.GetPtrVertex(), circle_resol);
 
-    elem_cylinder = poly.GetElementArr_3Dcylinder(cylinder, 90, &elem_cylinder_len);
+    poly.Make_3Dcylinder_depth(0.5, 1.5f, 8, 2);
 
+    auto cylinder_inst = poly.GetCylinderInst(0);
+    auto cylinder_data_size = sizeof(float)*(cylinder_inst.ptr_bottom->size() + cylinder_inst.ptr_wall->size() + cylinder_inst.ptr_bottom->size());
+    auto cylinder_ver_buf = poly.GetCylinderBuffer();
 
     m_polyLayout= VertexLayout::Create();
 
-    //m_polyBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW, circle2D_z, sizeof(float)*6*verCnt_2dCircle_z);
-    m_polyBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW, cylinder, sizeof(float)*size_arr_cylinder);
-    
-    m_polyLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), 0);
-    m_polyLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float)*6, sizeof(float)*3);
+    m_polyPosBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW, 
+        nullptr, 
+        (size_t)cylinder_data_size);
 
-    //m_idxPolyBuf = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW, element_circle2Dz, sizeof(uint32_t)*circle_resol*3);
-    m_idxPolyBuf = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW, elem_cylinder, sizeof(uint32_t)*elem_cylinder_len);
+    m_polyLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 100, (const void*)cylinder_ver_buf);
+
+    // m_polyclrBuf = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW, poly.GetPtrColor(), sizeof(float)*poly.GetVertexSize());
+    // m_polyLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float)*3, 0);
+    // glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    elem_cylinder_len = poly.GetElemArrCnt();
+    //size_cylinder = 3* poly.GetVertexCnt();
+    
+    m_idxPolyBuf = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW, elem_cylinder, sizeof(uint32_t)*poly.GetElemArrCnt());
     /* ************************************************************************************************** */
 
     
@@ -299,7 +303,7 @@ bool Context::Init() {
 
 
 
-     /* **************************** Shader for Line&Polygon Program Create ***************************** */
+    /* **************************** Shader for Polygon Program Create ***************************** */
     std::shared_ptr<Shader> vertShader_poly = Shader::CreateFromFile("../shader/polygon.vs", GL_VERTEX_SHADER);
     std::shared_ptr<Shader> fragShader_poly = Shader::CreateFromFile("../shader/polygon.fs", GL_FRAGMENT_SHADER);
 
@@ -315,6 +319,26 @@ bool Context::Init() {
         return false;
 
     SPDLOG_INFO("polygon program id: {}", m_poly_program->Get());   
+    /* ***************************************************************************************************** */
+
+
+
+    /* **************************** Shader for Coordinate Line Create ***************************** */
+    std::shared_ptr<Shader> vertShader_coord = Shader::CreateFromFile("../shader/coord.vs", GL_VERTEX_SHADER);
+    std::shared_ptr<Shader> fragShader_coord = Shader::CreateFromFile("../shader/coord.fs", GL_FRAGMENT_SHADER);
+
+    if (!vertShader_coord || !fragShader_coord)
+        return false;
+
+    SPDLOG_INFO("Coord. Line vertex shader id: {}", vertShader_coord->Get());
+    SPDLOG_INFO("Coord. Line fragment shader id: {}", fragShader_coord->Get());
+
+    m_coord_program = Program::Create({fragShader_coord, vertShader_coord});
+
+    if (!m_coord_program)
+        return false;
+
+    SPDLOG_INFO("Coord. Line program id: {}", m_coord_program->Get());   
     /* ***************************************************************************************************** */
  
 
@@ -350,6 +374,9 @@ bool Context::Init() {
     m_tex_program->SetUniform("tex", 0);
     // use texture slot no.1
     m_tex_program->SetUniform("tex2", 1);
+
+    //glEnable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
  
     return true;
 }

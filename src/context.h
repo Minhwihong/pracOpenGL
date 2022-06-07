@@ -25,6 +25,7 @@ private:
     
     std::unique_ptr<Program>  m_tex_program;
     std::unique_ptr<Program>  m_poly_program;
+    std::unique_ptr<Program>  m_coord_program;
 
 
     std::unique_ptr<VertexLayout> m_objVertexLayout;
@@ -37,7 +38,8 @@ private:
 
 
     std::unique_ptr<Buffer> m_lineBuf;
-    std::unique_ptr<Buffer> m_polyBuf;
+    std::unique_ptr<Buffer> m_polyPosBuf;
+    std::unique_ptr<Buffer> m_polyclrBuf;
     std::unique_ptr<Buffer> m_idxPolyBuf;
 
     std::unique_ptr<Texture> m_texture;

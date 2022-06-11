@@ -8,6 +8,21 @@
 #include "vertex_layout.h"
 #include "texture.h"
 
+
+struct Light {
+    glm::vec3 position { glm::vec3(3.0f, 3.0f, 3.0f)};
+    glm::vec3 ambient {  glm::vec3(0.1f, 0.1f, 0.1f)};
+    glm::vec3 diffuse {  glm::vec3(0.5f, 0.5f, 0.5f)};
+    glm::vec3 specular { glm::vec3(1.0f, 1.0f, 1.0f)};
+};
+
+struct Material{
+    glm::vec3 ambient {  glm::vec3(1.0f, 0.5f, 0.3f)};
+    glm::vec3 diffuse {  glm::vec3(1.0f, 0.5f, 0.3f)};
+    glm::vec3 specular { glm::vec3(0.5f, 0.5f, 0.5f)};
+    float shininess { 32.0f};
+};
+
 CLASS_PTR(Context)
 class Context {
 public:
@@ -40,13 +55,19 @@ private:
 
 
     // light param
-    glm::vec3 m_lightPos {glm::vec3(3.0f, 3.0f, 3.0f)};
-    glm::vec3 m_lightColor {glm::vec3(1.0f, 1.0f, 1.0f)};   // default 백색광
-    glm::vec3 m_objectColor {glm::vec3(1.0f, 0.5f, 0.0f)};
-    float m_ambientStrength {0.1f};
+    Light m_light;
+    Material m_material;
 
-    float m_specularStrength { 0.5f};
-    float m_specularShininess { 32.0f};
+
+    // glm::vec3 m_lightPos {glm::vec3(3.0f, 3.0f, 3.0f)};
+    // glm::vec3 m_lightColor {glm::vec3(1.0f, 1.0f, 1.0f)};   // default 백색광
+    // glm::vec3 m_objectColor {glm::vec3(1.0f, 0.5f, 0.0f)};
+    // float m_ambientStrength {0.1f};
+
+    // float m_specularStrength { 0.5f};
+    // float m_specularShininess { 32.0f};
+
+
 
     // camera param
     bool m_cameraControl {false};

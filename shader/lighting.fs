@@ -6,12 +6,6 @@ in vec2 texCoord;
 out vec4 fragColor;
 
 
-// uniform vec3 lightPos;
-// uniform vec3 lightColor;        // 광원의 색상
-// uniform vec3 objectColor;       
-// uniform float ambientStrength;  // 주변광(물체의 기본 색상)의 전체 밝기를 나타냄
-
-
 
 uniform vec3 viewPos;           // 보고 있는 눈(카메라)의 위치
 
@@ -26,12 +20,9 @@ uniform Light light;
 
 
 struct Material{
-    // deprecated
-    //vec3 ambient;
-    //vec3 diffuse;
-
     sampler2D diffuse;
-    vec3 specular;
+    sampler2D specular;
+    //vec3 specular;
     float shininess;
 };
 uniform Material material;
@@ -43,8 +34,6 @@ uniform Material material;
 
 void main() {
     /* ****************** 주변광(기본 광원) 계산 ****************** */
-    // deprecated
-    //vec3 ambient = material.ambient * light.ambient;
 
     vec3 texColor = texture(material.diffuse, texCoord).xyz;
     vec3 ambient = texColor * light.ambient;
@@ -61,14 +50,13 @@ void main() {
 
     float diff = max(dot(pixelNorm, lightDir), 0.0);
 
-    // deprecated
-    //vec3 diffuse = diff * material.diffuse * light.diffuse;
-
     vec3 diffuse = diff * texColor * light.diffuse;
     /* ******************************************************* */
 
 
     /* ********* 광원이 물체에 반사되어 카메라에 비치는 광량 계산 ******** */
+    vec3 specColor = texture(material.specular, texCoord).xyz;  
+
     vec3 viewDir = normalize(viewPos - position);
 
     vec3 reflectDir = reflect(-lightDir, pixelNorm);
@@ -76,7 +64,8 @@ void main() {
     // 물체에 반사광이 표시되는 영역의 크기를 조절 -> specularShininess
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess );
 
-    vec3 specular = spec * material.specular * light.specular;
+    //vec3 specular = spec * material.specular * light.specular;
+    vec3 specular = spec * specColor * light.specular;
     /* ******************************************************* */
 
 

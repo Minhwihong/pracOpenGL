@@ -17,10 +17,15 @@ struct Light {
 };
 
 struct Material{
-    glm::vec3 ambient {  glm::vec3(1.0f, 0.5f, 0.3f)};
-    glm::vec3 diffuse {  glm::vec3(1.0f, 0.5f, 0.3f)};
+    // deprecated
+    //glm::vec3 ambient {  glm::vec3(1.0f, 0.5f, 0.3f)};
+    //glm::vec3 diffuse {  glm::vec3(1.0f, 0.5f, 0.3f)};
+
+
     glm::vec3 specular { glm::vec3(0.5f, 0.5f, 0.5f)};
     float shininess { 32.0f};
+
+    std::unique_ptr<Texture> diffuse;
 };
 
 CLASS_PTR(Context)
@@ -39,6 +44,8 @@ private:
     bool Init();
     
     std::unique_ptr<Program>  m_program;
+    std::unique_ptr<Program> m_simpleProgram;
+
     std::unique_ptr<VertexLayout> m_vertexLayout;
 
     std::unique_ptr<Buffer> m_vertexBuffer;
@@ -57,15 +64,6 @@ private:
     // light param
     Light m_light;
     Material m_material;
-
-
-    // glm::vec3 m_lightPos {glm::vec3(3.0f, 3.0f, 3.0f)};
-    // glm::vec3 m_lightColor {glm::vec3(1.0f, 1.0f, 1.0f)};   // default 백색광
-    // glm::vec3 m_objectColor {glm::vec3(1.0f, 0.5f, 0.0f)};
-    // float m_ambientStrength {0.1f};
-
-    // float m_specularStrength { 0.5f};
-    // float m_specularShininess { 32.0f};
 
 
 

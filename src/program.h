@@ -7,8 +7,10 @@
 CLASS_PTR(Program)
 class Program {
 public:
-    static ProgramUPtr Create(
-        const std::vector<ShaderPtr>& shaders);
+    static ProgramUPtr Create(const std::vector<ShaderPtr>& shaders);
+
+    static std::unique_ptr<Program> Create(const std::string& vertShaderFilename,
+        const std::string& fragShaderFilename);
 
     ~Program();
     uint32_t Get() const { return m_program; }
@@ -25,6 +27,9 @@ public:
 
     // transfer 3d vector
     void SetUniform(const std::string& name, const glm::vec3& value) const;
+
+    void SetUniform(const std::string& name, const glm::vec4& value) const;
+    
 private:
     Program() {}
     bool Link(

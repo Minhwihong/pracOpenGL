@@ -57,8 +57,8 @@ void Context::Render() {
         }
 
         if(ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen)){
-            ImGui::ColorEdit3("m.ambient", glm::value_ptr(m_material.ambient));
-            ImGui::ColorEdit3("m.diffuse", glm::value_ptr(m_material.diffuse));
+            //ImGui::ColorEdit3("m.ambient", glm::value_ptr(m_material.ambient));
+            //ImGui::ColorEdit3("m.diffuse", glm::value_ptr(m_material.diffuse));
             ImGui::ColorEdit3("m.specular", glm::value_ptr(m_material.specular));
             ImGui::DragFloat("m.shininess", &m_material.shininess, 1.0f, 1.0f, 256.0f);
         }
@@ -90,15 +90,22 @@ void Context::Render() {
 
 
     /* ****************************************** 광원에 작은 큐브 그리기 ****************************************** */
-    auto lightModelTransform = glm::translate(glm::mat4(1.0), m_light.position) * glm::scale(glm::mat4(1.0), glm::vec3(0.1f));
-    m_program->Use();
-    m_program->SetUniform("light.position", m_light.position);
+    auto lightModelTransform = glm::translate(glm::mat4(1.0), m_light.position) * 
+        glm::scale(glm::mat4(1.0), glm::vec3(0.1f));
 
-    m_program->SetUniform("light.ambient", m_light.diffuse);
-    m_program->SetUniform("material.ambient", m_light.diffuse);
+    // m_program->Use();
+    // m_program->SetUniform("light.position", m_light.position);
 
-    m_program->SetUniform("transform", projection*view*lightModelTransform);
-    m_program->SetUniform("modelTransform", lightModelTransform);
+    // m_program->SetUniform("light.ambient", m_light.diffuse);
+    // m_program->SetUniform("material.ambient", m_light.diffuse);
+
+    // m_program->SetUniform("transform", projection*view*lightModelTransform);
+    // m_program->SetUniform("modelTransform", lightModelTransform);
+
+    m_simpleProgram->Use();
+    m_simpleProgram->SetUniform("color", glm::vec4(m_light.ambient + m_light.diffuse, 1.0f));
+    m_simpleProgram->SetUniform("transform", projection * view * lightModelTransform);
+
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     /* ********************************************************************************************************* */
 
@@ -111,11 +118,12 @@ void Context::Render() {
     m_program->SetUniform("light.ambient", m_light.ambient);
     m_program->SetUniform("light.diffuse", m_light.diffuse);
     m_program->SetUniform("light.specular", m_light.specular);
-
-    m_program->SetUniform("material.ambient", m_material.ambient);
-    m_program->SetUniform("material.diffuse", m_material.diffuse);
+    m_program->SetUniform("material.diffuse", 0);               // texture slot number
     m_program->SetUniform("material.specular", m_material.specular);
     m_program->SetUniform("material.shininess", m_material.shininess);
+
+    glActiveTexture(GL_TEXTURE0);
+    m_material.diffuse->Bind();
 
     for(int idx=0; idx<cubePositions.size(); ++idx){
         auto& pos = cubePositions[idx];
@@ -208,22 +216,38 @@ bool Context::Init() {
 
     m_indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t) * 36);
 
-    std::shared_ptr<Shader> vertShader = Shader::CreateFromFile("../shader/lighting.vs", GL_VERTEX_SHADER);
-    std::shared_ptr<Shader> fragShader = Shader::CreateFromFile("../shader/lighting.fs", GL_FRAGMENT_SHADER);
 
-    if (!vertShader || !fragShader)
+    /* ******************************* Shader Program Load ******************************************** */
+
+    m_program = Program::Create("../shader/lighting.vs", "../shader/lighting.fs");
+
+    if(!m_program){
         return false;
+    }
 
-    SPDLOG_INFO("vertex shader id: {}", vertShader->Get());
-    SPDLOG_INFO("fragment shader id: {}", fragShader->Get());
+    m_simpleProgram = Program::Create("../shader/simple.vs", "../shader/simple.fs");
 
-    m_program = Program::Create({fragShader, vertShader});
-
-    if (!m_program)
+    if(!m_simpleProgram){
         return false;
+    }
 
-    SPDLOG_INFO("program id: {}", m_program->Get());   
+    // std::shared_ptr<Shader> vertShader = Shader::CreateFromFile("../shader/lighting.vs", GL_VERTEX_SHADER);
+    // std::shared_ptr<Shader> fragShader = Shader::CreateFromFile("../shader/lighting.fs", GL_FRAGMENT_SHADER);
+
+    // if (!vertShader || !fragShader)
+    //     return false;
+
+    // SPDLOG_INFO("vertex shader id: {}", vertShader->Get());
+    // SPDLOG_INFO("fragment shader id: {}", fragShader->Get());
+
+    // m_program = Program::Create({fragShader, vertShader});
+
+    // if (!m_program)
+    //     return false;
+
+    // SPDLOG_INFO("program id: {}", m_program->Get());   
  
+    /* *************************************************************************************************** */
 
  
     auto image = Image::Load("../image/container.jpg");
@@ -244,19 +268,22 @@ bool Context::Init() {
         SPDLOG_ERROR("Texture loading failed..");
     }
 
+    m_material.diffuse = Texture::CreateFromImage(Image::Load("../image/container2.png").get());
+
+
     glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
 
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_texture->Get());
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, m_texture2->Get());
+    // glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(GL_TEXTURE_2D, m_texture->Get());
+    // glActiveTexture(GL_TEXTURE1);
+    // glBindTexture(GL_TEXTURE_2D, m_texture2->Get());
 
-    m_program->Use();
-    // use texture slot no.0
-    m_program->SetUniform("tex", 0);
-    // use texture slot no.1
-    m_program->SetUniform("tex2", 1);
+    // m_program->Use();
+    // // use texture slot no.0
+    // m_program->SetUniform("tex", 0);
+    // // use texture slot no.1
+    // m_program->SetUniform("tex2", 1);
  
     return true;
 }

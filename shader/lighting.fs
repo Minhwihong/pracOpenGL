@@ -26,8 +26,11 @@ uniform Light light;
 
 
 struct Material{
-    vec3 ambient;
-    vec3 diffuse;
+    // deprecated
+    //vec3 ambient;
+    //vec3 diffuse;
+
+    sampler2D diffuse;
     vec3 specular;
     float shininess;
 };
@@ -40,7 +43,11 @@ uniform Material material;
 
 void main() {
     /* ****************** 주변광(기본 광원) 계산 ****************** */
-    vec3 ambient = material.ambient * light.ambient;
+    // deprecated
+    //vec3 ambient = material.ambient * light.ambient;
+
+    vec3 texColor = texture(material.diffuse, texCoord).xyz;
+    vec3 ambient = texColor * light.ambient;
     /* ******************************************************* */
 
 
@@ -54,7 +61,10 @@ void main() {
 
     float diff = max(dot(pixelNorm, lightDir), 0.0);
 
-    vec3 diffuse = diff * material.diffuse * light.diffuse;
+    // deprecated
+    //vec3 diffuse = diff * material.diffuse * light.diffuse;
+
+    vec3 diffuse = diff * texColor * light.diffuse;
     /* ******************************************************* */
 
 

@@ -12,6 +12,7 @@ uniform vec3 viewPos;           // 보고 있는 눈(카메라)의 위치
 
 struct Light {
     vec3 position;
+    vec3 direction;
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
@@ -41,7 +42,12 @@ void main() {
 
 
     /* ************** 광원이 물체에 반사되는 광량 계산 *************** */
-    vec3 lightDir = normalize(light.position - position);
+
+    // Spot 조명
+    //vec3 lightDir = normalize(light.position - position);
+
+    // Directional Light
+    vec3 lightDir = normalize(-light.direction);
 
     // openGL program -> vertex shader -> 에서 넘어온 normal을 다시 normalize 하는 이유
     // vertex shader에서 계산된 normal은 rasterization과정에서 선형보간이 진행됨

@@ -6,13 +6,16 @@ in vec2 texCoord;
 out vec4 fragColor;
 
 
-
 uniform vec3 viewPos;           // 보고 있는 눈(카메라)의 위치
 
 
 struct Light {
-    vec3 position;
+    // directional light model
     vec3 direction;
+    // spot light with attenuation model
+    vec3 position;
+    vec3 attenuation;
+
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
@@ -23,14 +26,11 @@ uniform Light light;
 struct Material{
     sampler2D diffuse;
     sampler2D specular;
-    //vec3 specular;
     float shininess;
 };
 uniform Material material;
 
 
-// uniform sampler2D tex;
-// uniform sampler2D tex2;
 
 
 void main() {
@@ -43,11 +43,14 @@ void main() {
 
     /* ************** 광원이 물체에 반사되는 광량 계산 *************** */
 
-    // Spot 조명
-    //vec3 lightDir = normalize(light.position - position);
+    // Point 조명 (감쇄적용)
+    float dist = length(light.position - position);
+    vec3 distPoly = vec3(1.0, dist, dist*dist);
+    float attenuation = 1.0 / dot(distPoly, light.attenuation);
+    vec3 lightDir = (light.position - position) / dist;
 
     // Directional Light
-    vec3 lightDir = normalize(-light.direction);
+    //vec3 lightDir = normalize(-light.direction);
 
     // openGL program -> vertex shader -> 에서 넘어온 normal을 다시 normalize 하는 이유
     // vertex shader에서 계산된 normal은 rasterization과정에서 선형보간이 진행됨
@@ -74,9 +77,11 @@ void main() {
     vec3 specular = spec * specColor * light.specular;
     /* ******************************************************* */
 
+    // directional light model
+    //vec3 result = ambient + diffuse + specular;
 
-    vec3 result = ambient + diffuse + specular;
+    // Point light model with attenuation
+    vec3 result = (ambient + diffuse + specular) * attenuation;
 
     fragColor = vec4(result, 1.0);
-    //fragColor = texture(tex, texCoord)*0.8 + texture(tex2, texCoord) * 0.2;
 }

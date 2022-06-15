@@ -91,6 +91,7 @@ void Context::Render() {
         }
 
         if(ImGui::CollapsingHeader("Light", ImGuiTreeNodeFlags_DefaultOpen)){
+            ImGui::DragFloat("l.distance", &m_light.distance, 0.5f, 0.0f, 3000.0f);
             ImGui::DragFloat3("l.position", glm::value_ptr(m_light.position), 0.01f);
             ImGui::DragFloat3("l.direction", glm::value_ptr(m_light.direction), 0.01f);
             ImGui::ColorEdit3("l.ambient", glm::value_ptr(m_light.ambient));
@@ -147,9 +148,11 @@ void Context::Render() {
 
     m_program->SetUniform("light.position", m_light.position);
     m_program->SetUniform("light.direction", m_light.direction);
+    m_program->SetUniform("light.attenuation", GetAttenuationCoeff(m_light.distance));
     m_program->SetUniform("light.ambient", m_light.ambient);
     m_program->SetUniform("light.diffuse", m_light.diffuse);
     m_program->SetUniform("light.specular", m_light.specular);
+
     m_program->SetUniform("material.diffuse", 0);               // texture slot number
     m_program->SetUniform("material.specular", 1);
     //m_program->SetUniform("material.specular", m_material.specular);

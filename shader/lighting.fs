@@ -10,9 +10,13 @@ uniform vec3 viewPos;           // 보고 있는 눈(카메라)의 위치
 
 
 struct Light {
-    // directional light model
+    // directional/spot light model
     vec3 direction;
-    // spot light with attenuation model
+
+    // spot light model
+    float cutoff;
+
+    // point light with attenuation model
     vec3 position;
     vec3 attenuation;
 
@@ -52,36 +56,49 @@ void main() {
     // Directional Light
     //vec3 lightDir = normalize(-light.direction);
 
-    // openGL program -> vertex shader -> 에서 넘어온 normal을 다시 normalize 하는 이유
-    // vertex shader에서 계산된 normal은 rasterization과정에서 선형보간이 진행됨
-    // 단위벡터간의 선형보간 결과가 단위벡터임을 보장하지 못하기때문에 다시 normalize과정을 fragment shader과정에 진행
-    vec3 pixelNorm = normalize(normal);
+    // spot Light
+    float theta = dot(lightDir, normalize(-light.direction));
+    vec3 result = ambient;
 
-    float diff = max(dot(pixelNorm, lightDir), 0.0);
+    if(theta > light.cutoff){
 
-    vec3 diffuse = diff * texColor * light.diffuse;
-    /* ******************************************************* */
+        // openGL program -> vertex shader -> 에서 넘어온 normal을 다시 normalize 하는 이유
+        // vertex shader에서 계산된 normal은 rasterization과정에서 선형보간이 진행됨
+        // 단위벡터간의 선형보간 결과가 단위벡터임을 보장하지 못하기때문에 다시 normalize과정을 fragment shader과정에 진행
+        vec3 pixelNorm = normalize(normal);
+
+        float diff = max(dot(pixelNorm, lightDir), 0.0);
+
+        vec3 diffuse = diff * texColor * light.diffuse;
+        /* ******************************************************* */
 
 
-    /* ********* 광원이 물체에 반사되어 카메라에 비치는 광량 계산 ******** */
-    vec3 specColor = texture(material.specular, texCoord).xyz;  
+        /* ********* 광원이 물체에 반사되어 카메라에 비치는 광량 계산 ******** */
+        vec3 specColor = texture(material.specular, texCoord).xyz;  
 
-    vec3 viewDir = normalize(viewPos - position);
+        vec3 viewDir = normalize(viewPos - position);
 
-    vec3 reflectDir = reflect(-lightDir, pixelNorm);
+        vec3 reflectDir = reflect(-lightDir, pixelNorm);
 
-    // 물체에 반사광이 표시되는 영역의 크기를 조절 -> specularShininess
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess );
+        // 물체에 반사광이 표시되는 영역의 크기를 조절 -> specularShininess
+        float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess );
 
-    //vec3 specular = spec * material.specular * light.specular;
-    vec3 specular = spec * specColor * light.specular;
-    /* ******************************************************* */
+        //vec3 specular = spec * material.specular * light.specular;
+        vec3 specular = spec * specColor * light.specular;
+        /* ******************************************************* */
+
+        result += diffuse + specular;
+    }
+    
 
     // directional light model
     //vec3 result = ambient + diffuse + specular;
 
     // Point light model with attenuation
-    vec3 result = (ambient + diffuse + specular) * attenuation;
+    //vec3 result = (ambient + diffuse + specular) * attenuation;
+
+    // Spot light model
+    result *= attenuation;
 
     fragColor = vec4(result, 1.0);
 }

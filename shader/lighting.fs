@@ -14,7 +14,7 @@ struct Light {
     vec3 direction;
 
     // spot light model
-    float cutoff;
+    vec2 cutoff;
 
     // point light with attenuation model
     vec3 position;
@@ -57,10 +57,19 @@ void main() {
     //vec3 lightDir = normalize(-light.direction);
 
     // spot Light
-    float theta = dot(lightDir, normalize(-light.direction));
     vec3 result = ambient;
 
-    if(theta > light.cutoff){
+    float theta = dot(lightDir, normalize(-light.direction));
+    float intensity = clamp((theta - light.cutoff[1]) / 
+        (light.cutoff[0] - light.cutoff[1]), 
+        0.0, 
+        1.0 );
+
+    // Spot light model
+    //if(theta > light.cutoff){
+
+    //Spot light model with intensity    
+    if(intensity > 0.0){
 
         // openGL program -> vertex shader -> 에서 넘어온 normal을 다시 normalize 하는 이유
         // vertex shader에서 계산된 normal은 rasterization과정에서 선형보간이 진행됨
@@ -87,7 +96,11 @@ void main() {
         vec3 specular = spec * specColor * light.specular;
         /* ******************************************************* */
 
-        result += diffuse + specular;
+        //Spot light model 
+        //result += diffuse + specular;
+        
+        // Spot light model with intensity
+        result += (diffuse + specular) * intensity;
     }
     
 

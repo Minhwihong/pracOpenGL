@@ -25,6 +25,8 @@ public:
     // transfer float value
     void SetUniform(const std::string& name, float value) const;
 
+    void SetUniform(const std::string& name, const glm::vec2& value) const;
+
     // transfer 3d vector
     void SetUniform(const std::string& name, const glm::vec3& value) const;
 

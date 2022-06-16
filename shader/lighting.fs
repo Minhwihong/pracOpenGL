@@ -6,7 +6,6 @@ in vec2 texCoord;
 out vec4 fragColor;
 
 
-
 uniform vec3 viewPos;           // 보고 있는 눈(카메라)의 위치
 
 
@@ -16,20 +15,18 @@ struct Light {
     vec3 diffuse;
     vec3 specular;
 };
-uniform Light light;
-
 
 struct Material{
     sampler2D diffuse;
     sampler2D specular;
-    //vec3 specular;
+
     float shininess;
 };
+
+
+uniform Light light;
 uniform Material material;
 
-
-// uniform sampler2D tex;
-// uniform sampler2D tex2;
 
 
 void main() {
@@ -51,11 +48,13 @@ void main() {
     float diff = max(dot(pixelNorm, lightDir), 0.0);
 
     vec3 diffuse = diff * texColor * light.diffuse;
+    //vec3 diffuse = texColor;
     /* ******************************************************* */
 
 
     /* ********* 광원이 물체에 반사되어 카메라에 비치는 광량 계산 ******** */
     vec3 specColor = texture(material.specular, texCoord).xyz;  
+
 
     vec3 viewDir = normalize(viewPos - position);
 
@@ -70,6 +69,7 @@ void main() {
 
 
     vec3 result = ambient + diffuse + specular;
+    //vec3 result = diffuse;
 
     fragColor = vec4(result, 1.0);
     //fragColor = texture(tex, texCoord)*0.8 + texture(tex2, texCoord) * 0.2;

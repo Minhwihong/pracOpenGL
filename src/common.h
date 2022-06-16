@@ -17,6 +17,13 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
+#define OS_WIN      0
+#define OS_MAC      1
+#define OS_LINUX    2
+
+#define OS_SELECT   OS_WIN
+
+
 
 #define CLASS_PTR(klassName) \
 class klassName; \

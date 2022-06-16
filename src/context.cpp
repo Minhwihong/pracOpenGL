@@ -109,19 +109,22 @@ void Context::Render() {
     m_program->SetUniform("light.specular", m_light.specular);
     m_program->SetUniform("material.diffuse", 0);               // texture slot number
     m_program->SetUniform("material.specular", 1);
-    //m_program->SetUniform("material.specular", m_material.specular);
     m_program->SetUniform("material.shininess", m_material.shininess);
 
+    
     glActiveTexture(GL_TEXTURE0);
     m_material.diffuse->Bind();
     glActiveTexture(GL_TEXTURE1);
     m_material.specular->Bind();
 
-    for(int idx=0; idx<cubePositions.size(); ++idx){
+    
+
+    for(size_t idx=0; idx<cubePositions.size(); ++idx){
+
         auto& pos = cubePositions[idx];
 
         auto model = glm::translate(glm::mat4(1.0f), pos);
-        //model =glm::rotate(model, glm::radians((float)glfwGetTime()*120.0f  + 20*(float)idx), glm::vec3(1.0f, 0.2f, 0.0f));
+        
         model =glm::rotate(model, 
             glm::radians((m_animation ? (float)glfwGetTime() : 0.0f) *120.0f + 20*(float)idx), 
             glm::vec3(1.0f, 0.2f, 0.0f));
@@ -210,14 +213,21 @@ bool Context::Init() {
 
 
     /* ******************************* Shader Program Load ******************************************** */
-
-    m_program = Program::Create("../shader/lighting.vs", "../shader/lighting.fs");
+#if(OS_SELECT == OS_WIN)
+    m_program = Program::Create("../../shader/lighting.vs", "../../shader/lighting.fs");
+#else
+     m_program = Program::Create("../shader/lighting.vs", "../shader/lighting.fs");
+#endif
 
     if(!m_program){
         return false;
     }
 
+#if(OS_SELECT == OS_WIN)
+    m_simpleProgram = Program::Create("../../shader/simple.vs", "../../shader/simple.fs");
+#else
     m_simpleProgram = Program::Create("../shader/simple.vs", "../shader/simple.fs");
+#endif
 
     if(!m_simpleProgram){
         return false;
@@ -225,31 +235,42 @@ bool Context::Init() {
 
     /* *************************************************************************************************** */
 
- 
-    auto image = Image::Load("../image/container.jpg");
-    auto image2 = Image::Load("../image/awesomeface.png");
 
-    if(image == nullptr || image2 == nullptr){
+
+ #if(OS_SELECT == OS_WIN)
+    auto diffuse_image = Image::Load("../../image/container2.png"); 
+    auto spec_image = Image::Load("../../image/container2_specular.png");
+   
+    if(!spec_image){
+        SPDLOG_ERROR("spec_image loading failed..");
         return false;
-    } 
-
-    SPDLOG_INFO("Image 1: {}x{}, {} channels", image->GetWidth(), image->GetHeight(), image->GetChannelCount());
-    SPDLOG_INFO("Image 2: {}x{}, {} channels", image2->GetWidth(), image2->GetHeight(), image2->GetChannelCount());
-
-    m_texture = Texture::CreateFromImage(image.get());
-
-    m_texture2 = Texture::CreateFromImage(image2.get());
-
-    if(!m_texture){
-        SPDLOG_ERROR("Texture loading failed..");
     }
-
+    
+    if(!diffuse_image){
+        SPDLOG_ERROR("diffuse_image loading failed..");
+        return false;
+    }
+#else
     m_material.diffuse = Texture::CreateFromImage(Image::Load("../image/container2.png").get());
     m_material.specular = Texture::CreateFromImage(Image::Load("../image/container2_specular.png").get());
+#endif
 
 
+    m_material.diffuse = Texture::CreateFromImage(diffuse_image.get());
+
+    if(!m_material.diffuse){
+         SPDLOG_ERROR("specular Texture loading failed..");
+    }
+
+
+    m_material.specular = Texture::CreateFromImage(spec_image.get());
+
+    if(!m_material.specular){
+        SPDLOG_ERROR("diffuse Texture loading failed..");
+    }
+    
+    
     glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
-
 
     return true;
 }

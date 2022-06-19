@@ -7,6 +7,7 @@
 #include "buffer.h"
 #include "vertex_layout.h"
 #include "texture.h"
+#include "mesh.h"
 
 
 struct Light {
@@ -48,10 +49,12 @@ private:
     std::unique_ptr<Program>  m_program;
     std::unique_ptr<Program> m_simpleProgram;
 
-    std::unique_ptr<VertexLayout> m_vertexLayout;
+    // std::unique_ptr<VertexLayout> m_vertexLayout;
 
-    std::unique_ptr<Buffer> m_vertexBuffer;
-    std::unique_ptr<Buffer> m_indexBuffer;
+    // std::unique_ptr<Buffer> m_vertexBuffer;
+    // std::unique_ptr<Buffer> m_indexBuffer;
+
+    std::unique_ptr<Mesh> m_box;
 
     std::unique_ptr<Texture> m_texture;
     std::unique_ptr<Texture> m_texture2;

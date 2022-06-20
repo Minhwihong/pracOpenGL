@@ -14,6 +14,31 @@ std::unique_ptr<Image> Image::Load(const std::string& filepath){
     return std::move(image);
 }
 
+std::unique_ptr<Image> Image::CreateSingleColorImage(int width, int height,
+        const glm::vec4& color){
+
+    // 0~1사이의 color 를 0 ~ 255 정수로 변환  d
+    glm::vec4 clamped = glm::clamp(color * 255.0f, 0.0f, 255.0f);
+
+    u8 rgba[4] = {
+        (u8)clamped.r,
+        (u8)clamped.g,
+        (u8)clamped.b,
+        (u8)clamped.a,
+    };
+
+    auto image = Create(width, height, 4);
+
+    for(int idx=0; idx < width * height; ++idx){
+
+        memcpy(image->m_data + 4 * idx, rgba, 4);
+    }
+
+    return std::move(image);
+}
+
+
+
 Image::~Image(){
 
     if(m_data){

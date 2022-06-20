@@ -145,6 +145,8 @@ void Context::Render() {
 
 
     /* ***************************************** 회전하는 큐브 여러개 그리기 ****************************************** */
+
+
     m_program->Use();
     m_program->SetUniform("viewPos", m_cameraPos);
 
@@ -167,22 +169,30 @@ void Context::Render() {
     glActiveTexture(GL_TEXTURE1);
     m_material.specular->Bind();
 
-    for(int idx=0; idx<cubePositions.size(); ++idx){
-        auto& pos = cubePositions[idx];
+    auto modelTransform = glm::mat4(1.0f);
+    auto transform = projection * view * modelTransform;
 
-        auto model = glm::translate(glm::mat4(1.0f), pos);
-        //model =glm::rotate(model, glm::radians((float)glfwGetTime()*120.0f  + 20*(float)idx), glm::vec3(1.0f, 0.2f, 0.0f));
-        model =glm::rotate(model, 
-            glm::radians((m_animation ? (float)glfwGetTime() : 0.0f) *120.0f + 20*(float)idx), 
-            glm::vec3(1.0f, 0.2f, 0.0f));
+    m_program->SetUniform("transform", transform);
+    m_program->SetUniform("modelTransform", modelTransform);
 
-        auto transform = projection * view * model;
-        m_program->SetUniform("transform", transform);
-        m_program->SetUniform("modelTransform", model);
+    m_model->Draw();
 
-        //glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        m_box->Draw();
-    }
+    // for(int idx=0; idx<cubePositions.size(); ++idx){
+    //     auto& pos = cubePositions[idx];
+
+    //     auto model = glm::translate(glm::mat4(1.0f), pos);
+    //     //model =glm::rotate(model, glm::radians((float)glfwGetTime()*120.0f  + 20*(float)idx), glm::vec3(1.0f, 0.2f, 0.0f));
+    //     model =glm::rotate(model, 
+    //         glm::radians((m_animation ? (float)glfwGetTime() : 0.0f) *120.0f + 20*(float)idx), 
+    //         glm::vec3(1.0f, 0.2f, 0.0f));
+
+    //     auto transform = projection * view * model;
+    //     m_program->SetUniform("transform", transform);
+    //     m_program->SetUniform("modelTransform", model);
+
+    //     //glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    //     m_box->Draw();
+    // }
     /* ********************************************************************************************************* */
 }
 
@@ -190,23 +200,11 @@ bool Context::Init() {
 
     m_box = Mesh::MakeBox();
 
+    m_model = Model::Load("../models/backpack/backpack.obj");
 
-    // m_vertexLayout = VertexLayout::Create();
-    // m_vertexBuffer = Buffer::CreateWithData( GL_ARRAY_BUFFER, GL_STATIC_DRAW, vertices, sizeof(float) * 8, 4 * 6);
-
-
-    // // XYZ coordinates
-    // m_vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, 0);
-
-    // // Normal
-    // m_vertexLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float)*8, sizeof(float)*3);
-
-    // // Texture ST coordinates
-    // m_vertexLayout->SetAttrib(2, 2, GL_FLOAT, GL_FALSE, sizeof(float)*8, sizeof(float)*6);
-
-
-    // m_indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t), 36);
-
+    if(!m_model){
+        return false;
+    }
 
 
     /* ******************************* Shader Program Load ******************************************** */
@@ -226,8 +224,16 @@ bool Context::Init() {
     /* *************************************************************************************************** */
 
 
-    m_material.diffuse = Texture::CreateFromImage(Image::Load("../image/container2.png").get());
-    m_material.specular = Texture::CreateFromImage(Image::Load("../image/container2_specular.png").get());
+    //m_material.diffuse = Texture::CreateFromImage(Image::Load("../image/container2.png").get());
+    //m_material.specular = Texture::CreateFromImage(Image::Load("../image/container2_specular.png").get());
+
+    m_material.diffuse = Texture::CreateFromImage(
+        Image::CreateSingleColorImage(4, 4, glm::vec4(1.0f,1.0f,1.0f,1.0f)).get()
+    );
+
+    m_material.specular = Texture::CreateFromImage(
+        Image::CreateSingleColorImage(4, 4, glm::vec4(0.5f,0.5f,0.5f,0.5f)).get()
+    );
 
 
     glClearColor(0.1f, 0.2f, 0.3f, 0.0f);

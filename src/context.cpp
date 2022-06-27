@@ -174,10 +174,6 @@ void Context::Render() {
     m_program->SetUniform("material.specular", 1);
     m_program->SetUniform("material.shininess", m_material.shininess);
 
-    glActiveTexture(GL_TEXTURE0);
-    m_material.diffuse->Bind();
-    glActiveTexture(GL_TEXTURE1);
-    m_material.specular->Bind();
 
     auto modelTransform = glm::mat4(1.0f);
     auto transform = projection * view * modelTransform;
@@ -188,8 +184,6 @@ void Context::Render() {
     m_program->SetUniform("modelTransform", modelTransform);
 
     m_model->Draw(m_program.get());
-
-    
 }
 
 bool Context::Init() {
@@ -218,18 +212,6 @@ bool Context::Init() {
     }
 
     /* *************************************************************************************************** */
-
-
-    //m_material.diffuse = Texture::CreateFromImage(Image::Load("../image/container2.png").get());
-    //m_material.specular = Texture::CreateFromImage(Image::Load("../image/container2_specular.png").get());
-
-    m_material.diffuse = Texture::CreateFromImage(
-        Image::CreateSingleColorImage(4, 4, glm::vec4(1.0f,1.0f,1.0f,1.0f)).get()
-    );
-
-    m_material.specular = Texture::CreateFromImage(
-        Image::CreateSingleColorImage(4, 4, glm::vec4(0.5f,0.5f,0.5f,0.5f)).get()
-    );
 
 
     glClearColor(0.1f, 0.2f, 0.3f, 0.0f);

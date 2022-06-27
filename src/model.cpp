@@ -101,7 +101,7 @@ void Model::ProcessMesh(aiMesh* mesh, const aiScene* scene){
 
     for(u32 idx=0; idx < mesh->mNumVertices; ++idx){
 
-        auto& v = vertices[idx];
+        Vertex& v = vertices[idx];
 
         v.position = glm::vec3(mesh->mVertices[idx].x, 
             mesh->mVertices[idx].y, 
@@ -127,7 +127,7 @@ void Model::ProcessMesh(aiMesh* mesh, const aiScene* scene){
         indices[3*idx + 2] = mesh->mFaces[idx].mIndices[2];
     }
 
-    auto glMesh = Mesh::Create(vertices, indices, GL_TRIANGLES);
+    std::unique_ptr<Mesh> glMesh = Mesh::Create(vertices, indices, GL_TRIANGLES);
 
     if(mesh->mMaterialIndex >= 0){
         glMesh->SetMaterial(m_materials[mesh->mMaterialIndex]);

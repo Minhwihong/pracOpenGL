@@ -23,14 +23,7 @@ struct Light {
     glm::vec3 specular { glm::vec3(1.0f, 1.0f, 1.0f)};
 };
 
-struct Material{
 
-    //glm::vec3 specular { glm::vec3(0.5f, 0.5f, 0.5f)};
-    float shininess { 32.0f};
-
-    std::unique_ptr<Texture> diffuse;
-    std::unique_ptr<Texture> specular;
-};
 
 CLASS_PTR(Context)
 class Context {
@@ -46,6 +39,15 @@ public:
 private:
     Context() {}
     bool Init();
+
+    struct Material{
+
+        //glm::vec3 specular { glm::vec3(0.5f, 0.5f, 0.5f)};
+        float shininess { 32.0f};
+
+        std::unique_ptr<Texture> diffuse;
+        std::unique_ptr<Texture> specular;
+    };
     
     std::unique_ptr<Program>  m_program;
     std::unique_ptr<Program> m_simpleProgram;
@@ -66,6 +68,7 @@ private:
     // light param
     Light m_light;
     Material m_material;
+    bool m_flashLightMode{false};
 
 
 

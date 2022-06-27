@@ -98,6 +98,8 @@ void Context::Render() {
             ImGui::ColorEdit3("l.ambient", glm::value_ptr(m_light.ambient));
             ImGui::ColorEdit3("l.diffuse", glm::value_ptr(m_light.diffuse));
             ImGui::ColorEdit3("l.specular", glm::value_ptr(m_light.specular));
+
+            ImGui::Checkbox("flash light", &m_flashLightMode);
         }
 
         if(ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen)){
@@ -140,13 +142,11 @@ void Context::Render() {
     m_simpleProgram->SetUniform("transform", projection * view * lightModelTransform);
 
     //glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-    m_box->Draw();
+    m_box->Draw(m_simpleProgram.get());
     /* ********************************************************************************************************* */
 
 
     /* ***************************************** 회전하는 큐브 여러개 그리기 ****************************************** */
-
-
     m_program->Use();
     m_program->SetUniform("viewPos", m_cameraPos);
 
@@ -173,27 +173,13 @@ void Context::Render() {
     auto transform = projection * view * modelTransform;
 
     m_program->SetUniform("transform", transform);
+
+    // For proper Normal on linear transform, needs to get model coordinates
     m_program->SetUniform("modelTransform", modelTransform);
 
-    m_model->Draw();
+    m_model->Draw(m_program.get());
 
-    // for(int idx=0; idx<cubePositions.size(); ++idx){
-    //     auto& pos = cubePositions[idx];
-
-    //     auto model = glm::translate(glm::mat4(1.0f), pos);
-    //     //model =glm::rotate(model, glm::radians((float)glfwGetTime()*120.0f  + 20*(float)idx), glm::vec3(1.0f, 0.2f, 0.0f));
-    //     model =glm::rotate(model, 
-    //         glm::radians((m_animation ? (float)glfwGetTime() : 0.0f) *120.0f + 20*(float)idx), 
-    //         glm::vec3(1.0f, 0.2f, 0.0f));
-
-    //     auto transform = projection * view * model;
-    //     m_program->SetUniform("transform", transform);
-    //     m_program->SetUniform("modelTransform", model);
-
-    //     //glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-    //     m_box->Draw();
-    // }
-    /* ********************************************************************************************************* */
+    
 }
 
 bool Context::Init() {

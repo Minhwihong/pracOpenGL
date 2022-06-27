@@ -15,7 +15,7 @@ public:
 
     int GetMeshCount() const { return (int)m_meshes.size();}
     std::shared_ptr<Mesh> GetMesh(int index) const {return m_meshes[index];}
-    void Draw() const;
+    void Draw(const Program* program) const;
 
 private:
     Model() {}
@@ -25,6 +25,7 @@ private:
     void ProcessNode(aiNode* node, const aiScene* scene);
 
     std::vector<std::shared_ptr<Mesh>> m_meshes;
+    std::vector<std::shared_ptr<Material>> m_materials;
 
 };
 

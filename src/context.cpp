@@ -134,24 +134,34 @@ void Context::Render() {
 
 
     /* ****************************************** 광원에 작은 큐브 그리기 ****************************************** */
-    auto lightModelTransform = glm::translate(glm::mat4(1.0), m_light.position) * 
-        glm::scale(glm::mat4(1.0), glm::vec3(0.1f));
+    glm::vec3 lightPos = m_light.position;
+    glm::vec3 lightDir = m_light.direction;
 
-    m_simpleProgram->Use();
-    m_simpleProgram->SetUniform("color", glm::vec4(m_light.ambient + m_light.diffuse, 1.0f));
-    m_simpleProgram->SetUniform("transform", projection * view * lightModelTransform);
+    if(m_flashLightMode){
 
-    //glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-    m_box->Draw(m_simpleProgram.get());
+        lightPos = m_cameraPos;
+        lightDir = m_cameraFront;
+    }
+    else {
+
+        auto lightModelTransform = glm::translate(glm::mat4(1.0), m_light.position) * 
+            glm::scale(glm::mat4(1.0), glm::vec3(0.1f));
+
+        m_simpleProgram->Use();
+        m_simpleProgram->SetUniform("color", glm::vec4(m_light.ambient + m_light.diffuse, 1.0f));
+        m_simpleProgram->SetUniform("transform", projection * view * lightModelTransform);
+        m_box->Draw(m_simpleProgram.get());
+    }
     /* ********************************************************************************************************* */
+
 
 
     /* ***************************************** 회전하는 큐브 여러개 그리기 ****************************************** */
     m_program->Use();
     m_program->SetUniform("viewPos", m_cameraPos);
 
-    m_program->SetUniform("light.position", m_light.position);
-    m_program->SetUniform("light.direction", m_light.direction);
+    m_program->SetUniform("light.position", lightPos);
+    m_program->SetUniform("light.direction", lightDir);
     m_program->SetUniform("light.cutoff", glm::vec2(
         cosf(glm::radians(m_light.cutoff[0])),
         cosf(glm::radians(m_light.cutoff[0] + m_light.cutoff[1])) ));

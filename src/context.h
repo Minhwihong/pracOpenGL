@@ -64,12 +64,15 @@ private:
     // animation (for testing)
     bool m_animation { true };
 
+    bool m_flashLightMode{false};
 
     // light param
     Light m_light;
     Material m_material;
-    bool m_flashLightMode{false};
-
+    
+    std::unique_ptr<Material> m_planeMaterial;
+    std::unique_ptr<Material> m_box1Material;
+    std::unique_ptr<Material> m_box2Material;
 
 
     // camera param

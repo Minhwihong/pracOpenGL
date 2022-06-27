@@ -174,33 +174,16 @@ void Context::Render() {
     m_program->SetUniform("material.specular", 1);
     m_program->SetUniform("material.shininess", m_material.shininess);
 
-    glActiveTexture(GL_TEXTURE0);
-    m_material.diffuse->Bind();
-    glActiveTexture(GL_TEXTURE1);
-    m_material.specular->Bind();
-
-    auto modelTransform = glm::mat4(1.0f);
-    auto transform = projection * view * modelTransform;
-
-    m_program->SetUniform("transform", transform);
-
-    // For proper Normal on linear transform, needs to get model coordinates
-    m_program->SetUniform("modelTransform", modelTransform);
-
-    m_model->Draw(m_program.get());
-
-    
 }
 
 bool Context::Init() {
 
     m_box = Mesh::MakeBox();
+    // m_model = Model::Load("../models/backpack/backpack.obj");
 
-    m_model = Model::Load("../models/backpack/backpack.obj");
-
-    if(!m_model){
-        return false;
-    }
+    // if(!m_model){
+    //     return false;
+    // }
 
 
     /* ******************************* Shader Program Load ******************************************** */
@@ -219,10 +202,6 @@ bool Context::Init() {
 
     /* *************************************************************************************************** */
 
-
-    //m_material.diffuse = Texture::CreateFromImage(Image::Load("../image/container2.png").get());
-    //m_material.specular = Texture::CreateFromImage(Image::Load("../image/container2_specular.png").get());
-
     m_material.diffuse = Texture::CreateFromImage(
         Image::CreateSingleColorImage(4, 4, glm::vec4(1.0f,1.0f,1.0f,1.0f)).get()
     );
@@ -231,10 +210,17 @@ bool Context::Init() {
         Image::CreateSingleColorImage(4, 4, glm::vec4(0.5f,0.5f,0.5f,0.5f)).get()
     );
 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_texture->Get());
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_texture2->Get());
+
+    m_program->Use();
+    m_program->SetUniform("tex", 0);
+    m_program->SetUniform("tex2", 1);
+
 
     glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
-
-
     return true;
 }
 

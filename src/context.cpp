@@ -104,7 +104,8 @@ void Context::Render() {
 
         if(ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen)){
             //ImGui::ColorEdit3("m.specular", glm::value_ptr(m_material.specular));
-            ImGui::DragFloat("m.shininess", &m_material.shininess, 1.0f, 1.0f, 256.0f);
+            //ImGui::DragFloat("m.shininess", &m_material.shininess, 1.0f, 1.0f, 256.0f);
+
         }
 
         ImGui::Checkbox("animation", &m_animation);
@@ -156,7 +157,7 @@ void Context::Render() {
 
 
 
-    /* ***************************************** 회전하는 큐브 여러개 그리기 ****************************************** */
+    /* ***************************************** Render Scene ****************************************** */
     m_program->Use();
     m_program->SetUniform("viewPos", m_cameraPos);
 
@@ -170,10 +171,45 @@ void Context::Render() {
     m_program->SetUniform("light.diffuse", m_light.diffuse);
     m_program->SetUniform("light.specular", m_light.specular);
 
-    m_program->SetUniform("material.diffuse", 0);               // texture slot number
-    m_program->SetUniform("material.specular", 1);
-    m_program->SetUniform("material.shininess", m_material.shininess);
+    // m_program->SetUniform("material.diffuse", 0);               // texture slot number
+    // m_program->SetUniform("material.specular", 1);
+    // m_program->SetUniform("material.shininess", m_box1Material->shininess);
 
+    auto modelTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f)) *
+        glm::scale(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 10.0f));
+
+    auto tranform = projection * view * modelTransform;
+
+    m_program->SetUniform("transform", tranform);
+    m_program->SetUniform("modelTransform", modelTransform);
+    m_planeMaterial->SetToProgram(m_program.get());
+    m_box->Draw(m_program.get());
+
+
+
+    modelTransform = glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.75f, -4.0f)) *
+        glm::rotate(glm::mat4(1.0f), glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
+        glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f));
+
+    tranform = projection * view * modelTransform;
+
+    m_program->SetUniform("transform", tranform);
+    m_program->SetUniform("modelTransform", modelTransform);
+    m_box1Material->SetToProgram(m_program.get());
+    m_box->Draw(m_program.get());
+
+
+
+    modelTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.75f, 2.0f)) *
+        glm::rotate(glm::mat4(1.0f), glm::radians(20.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
+        glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f));
+
+    tranform = projection * view * modelTransform;
+
+    m_program->SetUniform("transform", tranform);
+    m_program->SetUniform("modelTransform", modelTransform);
+    m_box2Material->SetToProgram(m_program.get());
+    m_box->Draw(m_program.get());
 }
 
 bool Context::Init() {
@@ -202,22 +238,62 @@ bool Context::Init() {
 
     /* *************************************************************************************************** */
 
-    m_material.diffuse = Texture::CreateFromImage(
-        Image::CreateSingleColorImage(4, 4, glm::vec4(1.0f,1.0f,1.0f,1.0f)).get()
+    // m_material.diffuse = Texture::CreateFromImage(
+    //     Image::CreateSingleColorImage(4, 4, glm::vec4(1.0f,1.0f,1.0f,1.0f)).get()
+    // );
+
+    // m_material.specular = Texture::CreateFromImage(
+    //     Image::CreateSingleColorImage(4, 4, glm::vec4(0.5f,0.5f,0.5f,0.5f)).get()
+    // );
+
+    // glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(GL_TEXTURE_2D, m_texture->Get());
+    // glActiveTexture(GL_TEXTURE1);
+    // glBindTexture(GL_TEXTURE_2D, m_texture2->Get());
+
+    // m_program->Use();
+    // m_program->SetUniform("tex", 0);
+    // m_program->SetUniform("tex2", 1);
+
+    std::shared_ptr<Texture> darkGrayTexture = Texture::CreateFromImage(
+        Image::CreateSingleColorImage(4, 4, glm::vec4(0.2f, 0.2f, 0.2f, 1.0f)).get()
     );
 
-    m_material.specular = Texture::CreateFromImage(
-        Image::CreateSingleColorImage(4, 4, glm::vec4(0.5f,0.5f,0.5f,0.5f)).get()
+    std::shared_ptr<Texture> GrayTexture = Texture::CreateFromImage(
+        Image::CreateSingleColorImage(4, 4, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)).get()
     );
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_texture->Get());
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, m_texture2->Get());
 
-    m_program->Use();
-    m_program->SetUniform("tex", 0);
-    m_program->SetUniform("tex2", 1);
+    m_planeMaterial = Material::Create();
+    m_planeMaterial->diffuse = Texture::CreateFromImage(
+        Image::Load("../image/marble.jpg").get()
+    );
+
+    m_planeMaterial->specular = GrayTexture;
+    m_planeMaterial->shininess = 128.0f;
+
+
+
+    m_box1Material = Material::Create();
+    m_box1Material->diffuse = Texture::CreateFromImage(
+        Image::Load("../image/container.jpg").get()
+    );
+
+    m_box1Material->specular = darkGrayTexture;
+    m_box1Material->shininess = 16.0f;
+
+
+
+    m_box2Material = Material::Create();
+    m_box2Material->diffuse = Texture::CreateFromImage(
+        Image::Load("../image/container2.png").get()
+    );
+
+    m_box2Material->specular = Texture::CreateFromImage(
+        Image::Load("../image/container2_specular.png").get()
+    );
+    m_box2Material->shininess = 64.0f;
+
 
 
     glClearColor(0.1f, 0.2f, 0.3f, 0.0f);

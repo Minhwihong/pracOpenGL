@@ -62,6 +62,7 @@ public:
 
     void SetToProgram(const Program* program) const;
 
+    
 private:
     Material(){}
 

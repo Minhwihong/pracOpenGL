@@ -49,6 +49,8 @@ bool Model::LoadByAssimp(const std::string& filename){
         // filepath에 타입(specular or diffuse)에 해당하는 텍스처 파일이름이 저장됨
         material->GetTexture(type, 0, &filepath);
 
+        SPDLOG_INFO("Texture loading - type: {}, path: {}", (int)type, filepath.C_Str());
+
         // {} / {} -> dirname/filepath
         auto image = Image::Load(fmt::format("{}/{}", dirname, filepath.C_Str()));
 
@@ -67,6 +69,8 @@ bool Model::LoadByAssimp(const std::string& filename){
         glMaterial->diffuse = LoadTexture(material, aiTextureType_DIFFUSE);
         glMaterial->specular = LoadTexture(material, aiTextureType_SPECULAR);
         m_materials.push_back(std::move(glMaterial));
+
+        SPDLOG_INFO("material index : {}", idx);
     }
 
     ProcessNode(scene->mRootNode, scene);

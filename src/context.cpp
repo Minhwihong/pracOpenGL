@@ -114,7 +114,7 @@ void Context::Render() {
     /* ********************************************************************************************************* */
     
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
     /* **************************************** Local좌표를 카메라 좌표로 변환 *************************************** */
@@ -123,8 +123,11 @@ void Context::Render() {
                         glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);     // (0.0f, 0.0f, -1.0f, 0.0f)에서 마지막에 0.0을 넣은 것은 평행이동이 안되게 하기 위함
 
     // 종횡비 4:3, 세로화각 45도의 원근투영
+    // auto projection = glm::perspective(glm::radians(45.0f),
+    //     (float)m_width/(float)m_height, 0.01f, 30.0f);
+
     auto projection = glm::perspective(glm::radians(45.0f),
-        (float)m_width/(float)m_height, 0.01f, 20.0f);
+        (float)m_width/(float)m_height, 0.5f, 20.0f);
 
 
     // 카메라의 3축의 단위벡터로부터 카메라 뷰 행렬을 계산하는 glm 함수
@@ -200,6 +203,22 @@ void Context::Render() {
 
 
 
+    // modelTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.75f, 2.0f)) *
+    //     glm::rotate(glm::mat4(1.0f), glm::radians(20.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
+    //     glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f));
+
+    // tranform = projection * view * modelTransform;
+
+    // m_program->SetUniform("transform", tranform);
+    // m_program->SetUniform("modelTransform", modelTransform);
+    // m_box2Material->SetToProgram(m_program.get());
+    // m_box->Draw(m_program.get());
+
+    glEnable(GL_STENCIL_TEST);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+    glStencilMask(0xFF);
+
     modelTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.75f, 2.0f)) *
         glm::rotate(glm::mat4(1.0f), glm::radians(20.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
         glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f));
@@ -210,7 +229,28 @@ void Context::Render() {
     m_program->SetUniform("modelTransform", modelTransform);
     m_box2Material->SetToProgram(m_program.get());
     m_box->Draw(m_program.get());
+
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilMask(0x0);
+    glDisable(GL_DEPTH_TEST);
+
+    m_simpleProgram->Use();
+    m_simpleProgram->SetUniform("color", glm::vec4(1.0f, 1.0f, 0.5f, 1.0f));
+    m_simpleProgram->SetUniform("transform", 
+        tranform * glm::scale(glm::mat4(1.0f), glm::vec3(1.05f, 1.05f, 1.05f)));
+    
+    m_box->Draw(m_simpleProgram.get());
+
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_STENCIL_TEST);
+    glStencilFunc(GL_ALWAYS, 1, 0xff);
+    glStencilMask(0xff);
+
+
 }
+
+
+
 
 bool Context::Init() {
 
